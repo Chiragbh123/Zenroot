@@ -1,10 +1,10 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Zenroot AI Plant Wellness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZenRoot AI Plant Wellness</title>
   <style>
-    /* Basic reset & fonts */
     html, body {
       margin: 0; padding: 0;
       height: 100vh; width: 100vw;
@@ -14,8 +14,6 @@
       background-size: cover;
       color: #004d40;
     }
-
-    /* Overlay for subtle teal tone */
     #overlay {
       position: fixed;
       top:0; left:0; right:0; bottom:0;
@@ -23,16 +21,13 @@
       pointer-events: none;
       z-index: -1;
     }
-
     #app {
       display: flex;
       flex-direction: row;
       height: 100vh;
       width: 100vw;
       background: rgba(255,255,255,0.85);
-      box-shadow: inset 0 0 80px rgba(0,77,64,0.2);
     }
-
     #sidebar {
       width: 30%;
       background-color: #004d40;
@@ -43,29 +38,22 @@
       flex-direction: column;
       justify-content: center;
     }
-
     #sidebar h1 {
       font-size: 2.5rem;
       margin-bottom: 1rem;
       text-align: center;
     }
-
     #sidebar p {
       font-size: 1.2rem;
-      line-height: 1.4;
       text-align: center;
       margin-top: auto;
     }
-
     #mainContent {
       width: 70%;
       padding: 2rem;
-      box-sizing: border-box;
       overflow-y: auto;
       position: relative;
     }
-
-    /* Form styling with transitions */
     form {
       display: flex;
       flex-direction: column;
@@ -76,171 +64,63 @@
       overflow: hidden;
       transition: opacity 0.6s ease, max-height 0.6s ease;
     }
-
     form.active {
       opacity: 1;
-      max-height: 1000px; /* big enough to show full form */
+      max-height: 1000px;
     }
-
-    input, button {
+    input, button, select {
       padding: 0.9rem;
       font-size: 1rem;
       border-radius: 10px;
       border: 1.5px solid #00796b;
-      outline-offset: 2px;
-      outline-color: transparent;
-      transition: outline-color 0.3s ease;
     }
-
-    input:focus, button:focus {
-      outline-color: #004d40;
-    }
-
     button {
       background-color: #00796b;
       color: white;
-      border: none;
-      cursor: pointer;
       font-weight: 600;
-      transition: background-color 0.3s ease;
+      cursor: pointer;
     }
-
     button:hover {
       background-color: #004d40;
     }
-
     .result {
       background: #b2dfdb;
       padding: 1rem 1.5rem;
       border-radius: 12px;
       margin-top: 1rem;
-      max-height: 320px;
-      overflow-y: auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
-    .plant-item {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin: 12px 0;
-    }
-
-    .plant-item img {
-      width: 90px;
-      height: 90px;
-      border-radius: 12px;
-      object-fit: cover;
-      border: 3px solid #004d40;
-      box-shadow: 0 4px 8px rgba(0,77,64,0.3);
-      transition: transform 0.3s ease;
-    }
-
-    .plant-item img:hover {
-      transform: scale(1.05);
-    }
-
-    .switch-link {
-      font-size: 1rem;
-      color: #00796b;
-      cursor: pointer;
-      margin-top: -5px;
-      user-select: none;
-      text-align: center;
-      transition: color 0.3s ease;
-    }
-
-    .switch-link:hover {
-      text-decoration: underline;
-      color: #004d40;
-    }
-
-    /* Logout button style */
-    #logoutBtn {
-      background: #c62828 !important;
+    #weatherBox img {
+      width: 60px;
+      vertical-align: middle;
       margin-top: 10px;
-      font-weight: 700;
-      box-shadow: 0 3px 6px rgba(198, 40, 40, 0.6);
     }
-
-    /* Reset password button inside login form */
-    #resetPasswordBtn {
-      background:#00796b;
-      margin-top:10px;
-      font-size: 0.9rem;
-      font-weight: 600;
+    #cityInput, #cityDropdown {
+      margin-top: 10px;
+      padding: 0.5rem;
+      width: 100%;
+      border-radius: 8px;
     }
-
-    /* Music Player */
-    #musicControl {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #004d40;
-      border-radius: 50px;
-      padding: 12px 20px;
-      color: white;
-      cursor: pointer;
-      user-select: none;
-      font-weight: 600;
-      box-shadow: 0 6px 14px rgba(0,77,64,0.5);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 1000;
-      transition: background-color 0.3s ease;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-    #musicControl:hover {
-      background-color: #00796b;
-    }
-
-    #musicControl svg {
-      width: 22px;
-      height: 22px;
-      fill: white;
-    }
-
-    /* Landscape only overlay for mobiles */
-    @media (max-width: 768px) {
-      body::before {
-        content: "This website is designed for desktop landscape view only.";
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: #004d40;
-        color: white;
-        padding: 2rem 3rem;
-        text-align: center;
-        border-radius: 15px;
-        font-size: 1.3rem;
-        z-index: 9999;
-      }
-      #app {
-        display: none !important;
-      }
-      #musicControl {
-        display: none !important;
-      }
+    .plant-item {
+      animation: fadeIn 0.8s ease-in-out;
     }
   </style>
 </head>
 <body>
 <div id="overlay"></div>
-
 <div id="app">
   <div id="sidebar">
-    <h1>Zenroot AI</h1>
-    <p>Automated plant care & suggestions<br>using air and humidity data.</p>
+    <h1>ZenRoot AI</h1>
+    <p>Smart plant care powered by AI + weather</p>
   </div>
-
   <div id="mainContent">
-
     <form id="loginForm" class="active">
       <h2>Login</h2>
-      <input type="email" id="loginEmail" placeholder="Email" required autocomplete="username" />
-      <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password" />
+      <input type="email" id="loginEmail" placeholder="Email" required />
+      <input type="password" id="loginPassword" placeholder="Password" required />
       <button type="submit">Login</button>
       <button type="button" id="resetPasswordBtn">Reset Password</button>
       <div class="switch-link" id="toSignUp">Don't have an account? Sign Up</div>
@@ -248,204 +128,35 @@
 
     <form id="signUpForm">
       <h2>Sign Up</h2>
-      <input type="text" id="signUpName" placeholder="Full Name" required autocomplete="name" />
-      <input type="email" id="signUpEmail" placeholder="Email" required autocomplete="email" />
-      <input type="password" id="signUpPassword" placeholder="Password" required autocomplete="new-password" />
+      <input type="text" id="signUpName" placeholder="Full Name" required />
+      <input type="email" id="signUpEmail" placeholder="Email" required />
+      <input type="password" id="signUpPassword" placeholder="Password" required />
       <button type="submit">Sign Up</button>
       <div class="switch-link" id="toLogin">Already have an account? Login</div>
     </form>
 
     <form id="plantForm">
-      <h2>Get Plant Suggestions</h2>
-      <input type="number" id="aqi" placeholder="Enter AQI (e.g. 150)" required min="1" />
-      <input type="number" id="humidity" placeholder="Enter Humidity (e.g. 60)" required min="0" max="100" />
-      <button type="submit">Suggest Plants</button>
+      <h2>Weather & Plant Suggestion</h2>
+      <p>Enter or select your city to fetch current weather and get personalized plant suggestions:</p>
+      <select id="cityDropdown">
+        <option value="">-- Select a City --</option>
+        <option value="Delhi">Delhi</option>
+        <option value="Mumbai">Mumbai</option>
+        <option value="Chennai">Chennai</option>
+        <option value="Kolkata">Kolkata</option>
+        <option value="Bengaluru">Bengaluru</option>
+        <option value="Ahmedabad">Ahmedabad</option>
+      </select>
+      <input type="text" id="cityInput" placeholder="Or type a city..." />
+      <button type="button" onclick="getWeatherFromInput()">Get Weather + Suggest Plants</button>
+      <button type="button" id="gpsBtn">Use My Location</button>
       <button type="button" id="logoutBtn">Logout</button>
+      <div class="result" id="weatherBox">Weather loading...</div>
+      <div class="result" id="resultBox" style="display:none;"></div>
     </form>
-
-    <div class="result" id="resultBox" style="display:none;"></div>
-
   </div>
 </div>
 
-<!-- Music Control -->
-<div id="musicControl" title="Toggle Meditation Music">
-  <svg viewBox="0 0 24 24"><path d="M3 22v-20l18 10-18 10z"/></svg>
-  <span id="musicStatus">Play Music</span>
-</div>
-
-<!-- Local Meditation Music (public domain) -->
-<audio id="meditationAudio" loop preload="auto">
-  <source src="https://cdn.pixabay.com/download/audio/2021/09/28/audio_98cb95e15f.mp3?filename=relaxing-spa-music-ambient-11295.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
-</audio>
-
-<script>
-  const loginForm = document.getElementById('loginForm');
-  const signUpForm = document.getElementById('signUpForm');
-  const plantForm = document.getElementById('plantForm');
-  const toSignUp = document.getElementById('toSignUp');
-  const toLogin = document.getElementById('toLogin');
-  const resultBox = document.getElementById('resultBox');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const musicControl = document.getElementById('musicControl');
-  const meditationAudio = document.getElementById('meditationAudio');
-  const musicStatus = document.getElementById('musicStatus');
-  const resetPasswordBtn = document.getElementById('resetPasswordBtn');
-
-  // Plant images map
-  const plantImages = {
-    "Peace lilies": "https://cdn.pixabay.com/photo/2017/05/25/10/51/peace-lily-2343632_1280.jpg",
-    "Boston Ferns": "https://cdn.pixabay.com/photo/2018/05/12/20/18/boston-fern-3390935_1280.jpg",
-    "English Ivy": "https://cdn.pixabay.com/photo/2016/05/18/16/20/ivy-1401342_1280.jpg",
-    "Aloe Vera": "https://cdn.pixabay.com/photo/2017/01/20/00/30/aloe-vera-1995051_1280.jpg",
-    "Jade Plant (Crassula ovata)": "https://cdn.pixabay.com/photo/2018/04/14/20/23/jade-plant-3311286_1280.jpg",
-    "Rubber Plant (Ficus elastica)": "https://cdn.pixabay.com/photo/2016/04/11/15/36/ficus-plant-1322577_1280.jpg",
-    "Corn Plant": "https://cdn.pixabay.com/photo/2017/08/06/21/36/houseplant-2590800_1280.jpg",
-    "Lady Palm (Rhapis excelsa)": "https://cdn.pixabay.com/photo/2017/01/07/12/15/palm-1956106_1280.jpg",
-    "Swiss Cheese Plant (Monstera Deliciosa)": "https://cdn.pixabay.com/photo/2018/08/30/20/53/monstera-3645700_1280.jpg"
-  };
-
-  // Plant suggestion logic
-  function getPlants(aqi, humidity) {
-    if (aqi >= 50 && humidity <= 100 && humidity >= 50) return ["Peace lilies", "Boston Ferns", "English Ivy"];
-    if (aqi <= 200 && humidity <= 50) return ["Aloe Vera", "Jade Plant (Crassula ovata)", "Rubber Plant (Ficus elastica)"];
-    if (aqi >= 500 && humidity >= 50) return ["Corn Plant", "Lady Palm (Rhapis excelsa)", "Swiss Cheese Plant (Monstera Deliciosa)"];
-    if (aqi <= 200 && humidity >= 50) return ["Aloe Vera", "Jade Plant (Crassula ovata)", "Rubber Plant (Ficus elastica)"];
-    if (aqi >= 200 && humidity <= 50) return ["Aloe Vera", "Jade Plant (Crassula ovata)"];
-    return [];
-  }
-
-  // Show/hide forms with smooth transitions
-  function showForm(formToShow) {
-    [loginForm, signUpForm, plantForm].forEach(form => {
-      if (form === formToShow) {
-        form.classList.add('active');
-      } else {
-        form.classList.remove('active');
-      }
-    });
-    resultBox.style.display = 'none';
-  }
-
-  // User handling with localStorage for "Remember Me" effect
-  function saveUser(email) {
-    localStorage.setItem('zenrootUser', email);
-  }
-  function getUser() {
-    return localStorage.getItem('zenrootUser');
-  }
-  function removeUser() {
-    localStorage.removeItem('zenrootUser');
-  }
-
-  // On page load - check if user is remembered
-  window.onload = () => {
-    const user = getUser();
-    if(user){
-      showForm(plantForm);
-      alert(`Welcome back, ${user}!`);
-    } else {
-      showForm(loginForm);
-    }
-  };
-
-  // Login submit
-  loginForm.onsubmit = e => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-
-    if(email && password){
-      saveUser(email);
-      alert(`Logged in as ${email}`);
-      loginForm.reset();
-      showForm(plantForm);
-    } else {
-      alert('Please enter valid login credentials.');
-    }
-  };
-
-  // Reset Password button click
-  resetPasswordBtn.onclick = () => {
-    const email = prompt("Please enter your email to reset password:");
-    if(email && email.trim() !== "") {
-      alert(`Password reset link has been sent to ${email.trim()}. (Mock action)`);
-    } else {
-      alert("Please enter a valid email address.");
-    }
-  };
-
-  // SignUp submit
-  signUpForm.onsubmit = e => {
-    e.preventDefault();
-    const name = document.getElementById('signUpName').value.trim();
-    const email = document.getElementById('signUpEmail').value.trim();
-    const password = document.getElementById('signUpPassword').value.trim();
-
-    if(name && email && password){
-      alert(`Account created for ${name}`);
-      signUpForm.reset();
-      showForm(loginForm);
-    } else {
-      alert('Please fill all fields to sign up.');
-    }
-  };
-
-  // Switch links
-  toSignUp.onclick = () => showForm(signUpForm);
-  toLogin.onclick = () => showForm(loginForm);
-
-  // Logout
-  logoutBtn.onclick = () => {
-    removeUser();
-    alert('Logged out successfully.');
-    showForm(loginForm);
-  };
-
-  // Plant suggestion submit
-  plantForm.onsubmit = e => {
-    e.preventDefault();
-    const aqi = parseInt(document.getElementById('aqi').value);
-    const humidity = parseInt(document.getElementById('humidity').value);
-
-    if(aqi <= 0){
-      alert('AQI must be greater than 0.');
-      return;
-    }
-    if(humidity < 0 || humidity > 100){
-      alert('Humidity must be between 0 and 100.');
-      return;
-    }
-
-    const plants = getPlants(aqi, humidity);
-
-    if(plants.length === 0){
-      resultBox.innerHTML = `<p>No matching plants found for AQI ${aqi} and humidity ${humidity}%.</p>`;
-    } else {
-      resultBox.innerHTML = `<h3>Suggested Plants:</h3>` + plants.map(name => `
-        <div class="plant-item">
-          <img src="${plantImages[name]}" alt="${name}" />
-          <span>${name}</span>
-        </div>
-      `).join('');
-    }
-    resultBox.style.display = 'block';
-  };
-
-  // Meditation Music toggle
-  let isPlaying = false;
-  musicControl.onclick = () => {
-    if(isPlaying){
-      meditationAudio.pause();
-      musicStatus.textContent = 'Play Music';
-    } else {
-      meditationAudio.play();
-      musicStatus.textContent = 'Pause Music';
-    }
-    isPlaying = !isPlaying;
-  };
-</script>
-
+<script src="zenroot.js"></script>
 </body>
 </html>
