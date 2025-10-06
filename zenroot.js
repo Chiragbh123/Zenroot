@@ -26,7 +26,7 @@ const clearHistoryBtn = $('#clearHistory');
 const tabs = $$('.tab');
 
 // ===== STATE =====
-const weatherApiKey = "YOUR_WEATHERAPI_KEY"; // <- replace!
+const weatherApiKey = "3e53efbde704401986192444250610"; // <- replace!
 let currentCity = localStorage.getItem('lastCity') || "Mumbai";
 
 // Fun facts for PlantFlash
@@ -266,3 +266,4 @@ window.addEventListener('load', ()=>{
   // Button for manual fetch
   getWeatherBtn?.addEventListener('click', getWeatherFromInput);
 });
+
