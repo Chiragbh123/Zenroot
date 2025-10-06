@@ -2,161 +2,242 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenRoot AI Plant Wellness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZenRoot AI • Plant Wellness</title>
+
   <style>
-    html, body {
-      margin: 0; padding: 0;
-      height: 100vh; width: 100vw;
-      overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
-      background-size: cover;
-      color: #004d40;
+    :root{
+      --ink:#004d40;
+      --ink-2:#00796b;
+      --paper:rgba(255,255,255,.88);
+      --mint:#b2dfdb;
+      --danger:#c62828;
     }
-    #overlay {
-      position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background-color: rgba(0, 77, 64, 0.3);
-      pointer-events: none;
-      z-index: -1;
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;color:var(--ink)}
+    body{
+      background:url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80')
+      no-repeat center/cover fixed;
     }
-    #app {
-      display: flex;
-      flex-direction: row;
-      height: 100vh;
-      width: 100vw;
-      background: rgba(255,255,255,0.85);
+
+    #overlay{position:fixed;inset:0;background:rgba(0,77,64,.30);z-index:-1;}
+
+    .topbar{
+      display:flex;align-items:center;gap:1rem;justify-content:space-between;
+      padding:0.75rem 1rem;background:var(--paper);backdrop-filter:saturate(1.2) blur(6px);
+      border-bottom:1px solid #e2e8f0;
     }
-    #sidebar {
-      width: 30%;
-      background-color: #004d40;
-      color: white;
-      padding: 2rem;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    .brand{display:flex;align-items:center;gap:.5rem}
+    .brand .logo{font-size:1.4rem}
+    .brand .title{font-weight:700;letter-spacing:.2px}
+
+    .tabs{display:flex;gap:.5rem;flex-wrap:wrap}
+    .tab{
+      border:1px solid var(--ink-2);background:transparent;color:var(--ink-2);
+      padding:.45rem .8rem;border-radius:999px;cursor:pointer;font-weight:600;
     }
-    #sidebar h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      text-align: center;
+    .tab.active,.tab:hover{background:var(--ink-2);color:#fff}
+
+    #app{display:flex;min-height:calc(100vh - 56px)}
+    #sidebar{
+      width:30%;background:var(--ink);color:#fff;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;padding:2rem;text-align:center
     }
-    #sidebar p {
-      font-size: 1.2rem;
-      text-align: center;
-      margin-top: auto;
+    #sidebar h1{font-size:2.2rem;margin:.2rem 0 0}
+    #sidebar p{opacity:.9}
+
+    #content{width:70%;padding:2rem;overflow:auto;background:var(--paper)}
+
+    .card{
+      background:#fff;border:1px solid #e6efec;border-radius:14px;padding:1.2rem;
+      margin:0 0 1.2rem 0;box-shadow:0 6px 20px rgba(0,0,0,.06);
+      animation:fadeIn .6s ease;max-width:920px
     }
-    #mainContent {
-      width: 70%;
-      padding: 2rem;
-      overflow-y: auto;
-      position: relative;
+    .card.modal{max-width:420px;margin:0 auto}
+
+    label{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem}
+    input,select,button{
+      padding:.9rem;border-radius:10px;border:1.5px solid var(--ink-2);font-size:1rem
     }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: opacity 0.6s ease, max-height 0.6s ease;
+    button{background:var(--ink-2);color:#fff;font-weight:700;cursor:pointer}
+    button:hover{background:var(--ink)}
+    button.ghost{background:transparent;color:var(--ink-2)}
+    button.danger{background:var(--danger);border-color:#b71c1c}
+    button.danger.ghost{background:transparent;color:var(--danger);border-color:var(--danger)}
+
+    .row{display:flex;gap:.6rem;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+
+    .result{background:var(--mint);padding:1rem 1.2rem;border-radius:12px;margin-top:.8rem}
+    #weatherBox img{width:60px;vertical-align:middle;margin-top:10px}
+    .switch-link{margin-top:.4rem;color:var(--ink-2);cursor:pointer;text-decoration:underline}
+
+    /* Sections default hidden; JS toggles via tabs */
+    form.card,section.card{display:none}
+    form.card.active,section.card.active{display:block}
+    #loginForm.active,#signUpForm.active{display:block}
+
+    .lead{font-size:1.05rem;line-height:1.6}
+
+    .history{display:flex;flex-direction:column;gap:.6rem}
+    .history-item{background:#f1f8f6;border:1px solid #ddebe7;border-radius:12px;padding:.8rem}
+
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:translateY(0)}
     }
-    form.active {
-      opacity: 1;
-      max-height: 1000px;
-    }
-    input, button, select {
-      padding: 0.9rem;
-      font-size: 1rem;
-      border-radius: 10px;
-      border: 1.5px solid #00796b;
-    }
-    button {
-      background-color: #00796b;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #004d40;
-    }
-    .result {
-      background: #b2dfdb;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      margin-top: 1rem;
-    }
-    #weatherBox img {
-      width: 60px;
-      vertical-align: middle;
-      margin-top: 10px;
-    }
-    #cityInput, #cityDropdown {
-      margin-top: 10px;
-      padding: 0.5rem;
-      width: 100%;
-      border-radius: 8px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .plant-item {
-      animation: fadeIn 0.8s ease-in-out;
+    .plant-item{animation:fadeIn .6s ease}
+
+    @media (max-width:960px){
+      #sidebar{display:none}
+      #content{width:100%}
+      .grid{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-<div id="overlay"></div>
-<div id="app">
-  <div id="sidebar">
+<div id="overlay" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🪴</span>
+    <span class="title">ZenRoot AI</span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab active" data-tab="home" role="tab" aria-selected="true">Home</button>
+    <button class="tab" data-tab="abstract" role="tab">Abstract</button>
+    <button class="tab" data-tab="growguide" role="tab">GrowGuide</button>
+    <button class="tab" data-tab="plantflash" role="tab">PlantFlash</button>
+    <button class="tab" data-tab="history" role="tab">History</button>
+  </nav>
+</header>
+
+<main id="app" role="main">
+  <aside id="sidebar">
     <h1>ZenRoot AI</h1>
     <p>Smart plant care powered by AI + weather</p>
-  </div>
-  <div id="mainContent">
-    <form id="loginForm" class="active">
+  </aside>
+
+  <section id="content">
+    <!-- Auth: Login -->
+    <form id="loginForm" class="card active" autocomplete="on">
       <h2>Login</h2>
-      <input type="email" id="loginEmail" placeholder="Email" required />
-      <input type="password" id="loginPassword" placeholder="Password" required />
-      <button type="submit">Login</button>
-      <button type="button" id="resetPasswordBtn">Reset Password</button>
-      <div class="switch-link" id="toSignUp">Don't have an account? Sign Up</div>
+      <label>Email <input type="email" id="loginEmail" placeholder="you@example.com" required/></label>
+      <label>Password <input type="password" id="loginPassword" placeholder="••••••••" required/></label>
+      <div class="row">
+        <button type="submit">Login</button>
+        <button type="button" id="resetPasswordBtn" class="ghost">Reset Password</button>
+      </div>
+      <div class="switch-link" id="toSignUp" role="button" tabindex="0">Don’t have an account? Sign up</div>
     </form>
 
-    <form id="signUpForm">
+    <!-- Auth: Sign Up -->
+    <form id="signUpForm" class="card" autocomplete="on">
       <h2>Sign Up</h2>
-      <input type="text" id="signUpName" placeholder="Full Name" required />
-      <input type="email" id="signUpEmail" placeholder="Email" required />
-      <input type="password" id="signUpPassword" placeholder="Password" required />
-      <button type="submit">Sign Up</button>
-      <div class="switch-link" id="toLogin">Already have an account? Login</div>
+      <label>Full Name <input type="text" id="signUpName" placeholder="Full Name" required/></label>
+      <label>Email <input type="email" id="signUpEmail" placeholder="you@example.com" required/></label>
+      <label>Password 
+        <input type="password" id="signUpPassword" placeholder="At least 6 characters" minlength="6" required/>
+      </label>
+      <button type="submit">Create Account</button>
+      <div class="switch-link" id="toLogin" role="button" tabindex="0">Already have an account? Login</div>
     </form>
 
-    <form id="plantForm">
-      <h2>Weather & Plant Suggestion</h2>
-      <p>Enter or select your city to fetch current weather and get personalized plant suggestions:</p>
-      <select id="cityDropdown">
-        <option value="">-- Select a City --</option>
-        <option value="Delhi">Delhi</option>
-        <option value="Mumbai">Mumbai</option>
-        <option value="Chennai">Chennai</option>
-        <option value="Kolkata">Kolkata</option>
-        <option value="Bengaluru">Bengaluru</option>
-        <option value="Ahmedabad">Ahmedabad</option>
-      </select>
-      <input type="text" id="cityInput" placeholder="Or type a city..." />
-      <button type="button" onclick="getWeatherFromInput()">Get Weather + Suggest Plants</button>
-      <button type="button" id="gpsBtn">Use My Location</button>
-      <button type="button" id="logoutBtn">Logout</button>
-      <div class="result" id="weatherBox">Weather loading...</div>
+    <!-- App: Weather + Suggestions -->
+    <section id="plantForm" class="card">
+      <h2>Weather & Plant Suggestions</h2>
+      <p>Enter or select your city to fetch current weather and get personalized plant suggestions.</p>
+
+      <div class="grid">
+        <label>Choose a city
+          <select id="cityDropdown">
+            <option value="">— Select a City —</option>
+            <option>Delhi</option><option>Mumbai</option><option>Chennai</option>
+            <option>Kolkata</option><option>Bengaluru</option><option>Ahmedabad</option>
+          </select>
+        </label>
+        <label>Or type a city
+          <input type="text" id="cityInput" placeholder="e.g., Pune"/>
+        </label>
+      </div>
+
+      <div class="row">
+        <button type="button" id="getWeatherBtn">Get Weather + Suggest Plants</button>
+        <button type="button" id="gpsBtn" class="ghost">Use My Location</button>
+        <button type="button" id="logoutBtn" class="danger">Logout</button>
+      </div>
+
+      <div class="result" id="weatherBox" aria-live="polite">Weather not loaded.</div>
       <div class="result" id="resultBox" style="display:none;"></div>
-    </form>
-  </div>
-</div>
+    </section>
 
-<script src="zenroot.js"></script>
+    <!-- Abstract -->
+    <section id="abstract" class="card">
+      <h2>Abstract</h2>
+      <p class="lead">
+        ZenRoot AI blends live weather data with simple plant heuristics to give you 
+        easy, actionable care suggestions. No sensors needed—just your city.
+      </p>
+      <ul>
+        <li><b>GreenMatch:</b> Suggests plants based on temperature + humidity.</li>
+        <li><b>GrowGuide:</b> Friendly, focused mini-articles.</li>
+        <li><b>PlantFlash:</b> Bite-sized fun facts to learn on the go.</li>
+      </ul>
+    </section>
+
+    <!-- GrowGuide -->
+    <section id="growguide" class="card">
+      <h2>GrowGuide</h2>
+      <article class="guide">
+        <h3>Watering 101</h3>
+        <p>Let the top 2–3 cm of soil dry before watering most houseplants. Overwatering is the #1 cause of issues.</p>
+      </article>
+      <article class="guide">
+        <h3>Light Basics</h3>
+        <p>Bright, indirect light works for many indoor plants. South windows are strong—use sheer curtains to diffuse.</p>
+      </article>
+      <article class="guide">
+        <h3>Pot & Soil</h3>
+        <p>Use a draining mix and a pot with a hole. Repot yearly to refresh nutrients and root space.</p>
+      </article>
+    </section>
+
+    <!-- PlantFlash -->
+    <section id="plantflash" class="card">
+      <h2>PlantFlash</h2>
+      <div class="flash">
+        <p id="flashText">Tap “Next” to learn a plant fun fact!</p>
+        <div class="row">
+          <button type="button" id="flashPrev" class="ghost">Prev</button>
+          <button type="button" id="flashNext">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section id="history" class="card">
+      <h2>Plant History</h2>
+      <div id="historyList" class="history"></div>
+      <button type="button" id="clearHistory" class="danger ghost">Clear History</button>
+    </section>
+  </section>
+</main>
+
+<!-- Reset Password Modal -->
+<dialog id="resetDialog">
+  <form method="dialog" class="card modal">
+    <h3>Reset Password</h3>
+    <label>Email <input type="email" id="resetEmail" required/></label>
+    <label>New Password <input type="password" id="resetNewPass" minlength="6" required/></label>
+    <div class="row">
+      <button id="resetConfirm" value="confirm">Update</button>
+      <button class="ghost" value="cancel">Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Keep JS in a separate file -->
+<script src="zenroot.js" defer></script>
 </body>
 </html>
