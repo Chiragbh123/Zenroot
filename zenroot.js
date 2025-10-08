@@ -62,15 +62,15 @@ const plantPrices = {
 };
 
 // ===== MSP/FRP Data (₹ per quintal unless noted) — PLACEHOLDERS =====
-// Update these with latest official values when needed.
+// Update with the latest official values when needed.
 const mspCashCrops = {
   "Cotton (Medium Staple)": 7710,
   "Cotton (Long Staple)": 8110,
   "Raw Jute": 5600,
   "Copra (Milled)": 11582,
   "Copra (Ball)": 11000,
-  // FRP (not MSP) is per quintal of sugarcane; still showing for convenience:
-  "Sugarcane (FRP)": 340 // example per quintal
+  // FRP (not MSP) is per quintal of sugarcane; shown for convenience:
+  "Sugarcane (FRP)": 340
 };
 
 // ===== UTIL =====
@@ -132,7 +132,7 @@ async function getWeather(q){
     if(!data || !data.current) throw new Error("No data");
     const w = data.current;
     weatherBox.innerHTML = `
-      📍 <b>${data.location.name}, ${data.location.region || data.location.country}</b><br/>
+      📍 <b>${data.location.name}, ${data.location.region || ${data.location.country}}</b><br/>
       🌡️ Temp: ${w.temp_c} °C<br/>
       💧 Humidity: ${w.humidity}%<br/>
       🌬️ Wind: ${w.wind_kph} kph<br/>
@@ -173,22 +173,19 @@ gpsBtn?.addEventListener('click', () => {
   }, ()=> getWeather("Mumbai"), {enableHighAccuracy:false, timeout:8000});
 });
 
-// ===== SUGGESTIONS (with Avg Price + MSP if available) =====
+// ===== MSP helpers =====
 function formatMSP(name){
   if(name in mspCashCrops){
     const v = mspCashCrops[name];
-    if (name.includes("Sugarcane")) {
-      // FRP (per quintal)
-      return ` — FRP ₹${v}/quintal`;
-    }
+    if (name.includes("Sugarcane")) return ` — FRP ₹${v}/quintal`;
     return ` — MSP ₹${v}/quintal`;
   }
   return "";
 }
 
+// ===== SUGGESTIONS (with Avg Price + MSP if available) =====
 function suggestPlants(temp, humidity){
   let suggestions = [];
-  // Keep your original plant suggestions
   if (temp >= 30 && humidity >= 60) {
     suggestions = ["Peace Lily", "Boston Fern", "Spider Plant"];
   } else if (temp <= 20 && humidity >= 60) {
@@ -199,7 +196,7 @@ function suggestPlants(temp, humidity){
     suggestions = ["Rubber Plant", "ZZ Plant"];
   }
 
-  // Render with avg price + MSP (if crop)
+  // Render with avg price + MSP
   resultBox.innerHTML = `
     <h3>🌱 Suggested Plants / Crops</h3>
     <ul>
@@ -289,7 +286,6 @@ function activateTab(id){
   });
   // section states
   ['plantForm','abstract','gardenguide','plantflash','history']
-
     .forEach(sec => $('#'+sec).classList.remove('active'));
   if(id === 'home'){ $('#plantForm').classList.add('active'); }
   else { $('#'+id).classList.add('active'); }
@@ -325,10 +321,64 @@ clearHistoryBtn?.addEventListener('click', ()=>{
   }
 });
 
-// ===== PLANTFLASH =====
-function renderFact(){ $('#flashText').textContent = facts[factIndex]; }
-$('#flashNext')?.addEventListener('click', ()=>{ factIndex = (factIndex+1)%facts.length; renderFact(); });
-$('#flashPrev')?.addEventListener('click', ()=>{ factIndex = (factIndex-1+facts.length)%facts.length; renderFact(); });
+// ===== PLANTFLASH (animated) =====
+function swapFactAnimated(nextText, direction = 'right'){
+  const container = $('#flashContainer');
+  const textEl = $('#flashText');
+  if(!container || !textEl) return;
+
+  textEl.classList.remove('flash-enter-right','flash-enter-left','flash-leave-left','flash-leave-right');
+
+  const leaveClass = (direction === 'right') ? 'flash-leave-left' : 'flash-leave-right';
+  textEl.classList.add(leaveClass);
+
+  const onLeaveEnd = () => {
+    textEl.removeEventListener('animationend', onLeaveEnd);
+    textEl.textContent = nextText;
+    textEl.classList.remove(leaveClass);
+
+    const enterClass = (direction === 'right') ? 'flash-enter-right' : 'flash-enter-left';
+    textEl.classList.add(enterClass);
+
+    container.classList.remove('flash-pop');
+    // force reflow
+    // eslint-disable-next-line no-unused-expressions
+    container.offsetHeight;
+    container.classList.add('flash-pop');
+
+    const cleanup = () => {
+      textEl.classList.remove(enterClass);
+      textEl.removeEventListener('animationend', cleanup);
+    };
+    textEl.addEventListener('animationend', cleanup, {once:true});
+  };
+
+  textEl.addEventListener('animationend', onLeaveEnd, {once:true});
+}
+
+function renderFact(){
+  const textEl = $('#flashText');
+  if (textEl) textEl.textContent = facts[factIndex];
+}
+
+$('#flashNext')?.addEventListener('click', ()=>{
+  const nextIdx = (factIndex + 1) % facts.length;
+  swapFactAnimated(facts[nextIdx], 'right');
+  factIndex = nextIdx;
+});
+
+$('#flashPrev')?.addEventListener('click', ()=>{
+  const prevIdx = (factIndex - 1 + facts.length) % facts.length;
+  swapFactAnimated(facts[prevIdx], 'left');
+  factIndex = prevIdx;
+});
+
+// (Optional) Auto-advance every 6s
+// setInterval(()=>{
+//   const nextIdx = (factIndex + 1) % facts.length;
+///  swapFactAnimated(facts[nextIdx], 'right');
+//   factIndex = nextIdx;
+// }, 6000);
 
 // ===== MSP Checker logic =====
 mspShowBtn?.addEventListener('click', ()=>{
