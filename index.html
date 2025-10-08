@@ -25,10 +25,12 @@
       font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;
       color:var(--ink);
     }
-
-    /* 🔽 Use your own image from your project (commit it for GitHub Pages) */
     body{
-      background:url('images/bg.jpg') no-repeat center/cover fixed;
+      background:url('Picture/mybg.jpg') no-repeat center/cover fixed;
+}
+
+}
+
     }
 
     #overlay{position:fixed;inset:0;background:rgba(0,77,64,.30);z-index:-1;}
@@ -140,57 +142,6 @@
     }
     .plant-item{animation:fadeIn .6s ease}
 
-    /* --- PlantFlash: bigger & animated --- */
-    #plantflash .flash{
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      min-height:260px; padding:24px;
-      border-radius:16px;
-      background: linear-gradient(135deg, #e6fff4, #c6f3e7);
-      box-shadow: 0 10px 28px rgba(0,0,0,.12);
-      position: relative;
-      overflow:hidden;
-    }
-    #plantflash h2{ display:flex; align-items:center; gap:.5rem; }
-
-    #flashText{
-      font-size: clamp(1.2rem, 2.6vw + .4rem, 2.2rem);
-      line-height: 1.5;
-      text-align: center;
-      margin: 10px 8px 16px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.55);
-      backdrop-filter: blur(4px);
-    }
-
-    #plantflash .row{ gap: .8rem; justify-content:center; }
-    #plantflash .row button{ padding: .85rem 1.2rem; font-size: 1rem; border-radius: 12px; }
-    #flashNext{ box-shadow: 0 6px 16px rgba(0,121,107,.25); }
-    #flashPrev{ box-shadow: 0 6px 16px rgba(0,0,0,.08); }
-
-    #plantflash .flash::before, 
-    #plantflash .flash::after{
-      content:"🌿"; position:absolute; font-size: 2rem; opacity:.18;
-      animation: floatY 6s ease-in-out infinite;
-    }
-    #plantflash .flash::before{ left:14px; top:14px; }
-    #plantflash .flash::after{ right:14px; bottom:14px; animation-delay: 1.5s; }
-
-    @keyframes floatY{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-10px) } }
-    @keyframes popIn{ 0%{ opacity:0; transform: translateY(10px) scale(.98) } 100%{ opacity:1; transform: translateY(0) scale(1) } }
-    @keyframes slideInRight{ 0%{ opacity:0; transform: translateX(24px) scale(.98) } 100%{ opacity:1; transform: translateX(0) scale(1) } }
-    @keyframes slideInLeft{ 0%{ opacity:0; transform: translateX(-24px) scale(.98) } 100%{ opacity:1; transform: translateX(0) scale(1) } }
-    @keyframes slideOutLeft{ 0%{ opacity:1; transform: translateX(0) scale(1) } 100%{ opacity:0; transform: translateX(-24px) scale(.98) } }
-    @keyframes slideOutRight{ 0%{ opacity:1; transform: translateX(0) scale(1) } 100%{ opacity:0; transform: translateX(24px) scale(.98) } }
-
-    .flash-enter-right{ animation: slideInRight .38s ease both; }
-    .flash-enter-left{  animation: slideInLeft  .38s ease both; }
-    .flash-leave-left{  animation: slideOutLeft .28s ease both; }
-    .flash-leave-right{ animation: slideOutRight .28s ease both; }
-    .flash-pop{ animation: popIn .35s ease both; }
-
-    #plantflash.card{ padding: 1.4rem 1.4rem 1.2rem; }
-
     @media (max-width:960px){
       #sidebar{display:none}
       #content{width:100%}
@@ -210,7 +161,7 @@
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab active" data-tab="home" role="tab" aria-selected="true">Home</button>
     <button class="tab" data-tab="abstract" role="tab">Abstract</button>
-    <button class="tab" data-tab="gardenguide" role="tab">Garden Guide</button>
+   <button class="tab" data-tab="gardenguide" role="tab">Garden Guide</button>
     <button class="tab" data-tab="plantflash" role="tab">PlantFlash</button>
     <button class="tab" data-tab="history" role="tab">History</button>
     <button id="logoutTopBtn" title="Logout" hidden>Logout</button>
@@ -296,92 +247,102 @@
           <button type="button" id="mspShowBtn">Show MSP</button>
         </div>
         <p id="mspOutput" class="msp-value"></p>
-        <small>Note: Values are placeholders for demo. Update with latest official MSP/FRP.</small>
+        <small>Note: Values varies from time to time .</small>
       </div>
     </section>
 
-    <!-- Abstract -->
-    <section id="abstract" class="card">
-      <h2>Abstract</h2>
-      <p class="lead">
-        <strong>ZenRoot AI</strong> blends live weather data with simple plant heuristics to give you 
-        easy, actionable care suggestions. No sensors needed—just your city.
-      </p>
-      <ul>
-        <li><b>GreenMatch:</b> Suggests plants based on temperature + humidity.</li>
-        <li><b>Garden Guide:</b> Friendly, focused mini-articles.</li>
-        <li><b>PlantFlash:</b> Bite-sized fun facts to learn on the go.</li>
-      </ul>
+   <!-- Abstract -->
+<section id="abstract" class="card">
+  <h2>Abstract</h2>
+  <p class="lead">
+    <strong>ZenRoot AI</strong> blends live weather data with simple plant heuristics to give you 
+    easy, actionable care suggestions. No sensors needed—just your city.
+  </p>
+  <ul>
+    <li><b>GreenMatch:</b> Suggests plants based on temperature + humidity.</li>
+    <li><b>GrowGuide:</b> Friendly, focused mini-articles.</li>
+    <li><b>PlantFlash:</b> Bite-sized fun facts to learn on the go.</li>
+  </ul>
 
-      <h3>🌱 AI-Powered Automated Plant Care System</h3>
-      <p><b>Project Aim</b></p>
-      <ul>
-        <li>To provide busy households with a self-sustaining, AI-powered automated irrigation system.</li>
-        <li>To ensure smart, eco-friendly, and hassle-free plant care without external electricity dependency.</li>
-      </ul>
+  <h3>🌱 AI-Powered Automated Plant Care System</h3>
+  <p><b>Project Aim</b></p>
+  <ul>
+    <li>To provide busy households with a self-sustaining, AI-powered automated irrigation system.</li>
+    <li>To ensure smart, eco-friendly, and hassle-free plant care without external electricity dependency.</li>
+  </ul>
 
-      <p><b>Key Features</b></p>
-      <ul>
-        <li><b>Self-Powered Electricity Generator:</b> Works without external power (only initial jumpstart required), ensuring uninterrupted, sustainable operation.</li>
-        <li><b>Automated Irrigation with Rain Sensor:</b> Detects rainfall and adjusts watering automatically to avoid over-irrigation.</li>
-        <li><b>Air Quality Index (AQI) Detection:</b> Monitors local AQI and suggests suitable plants (e.g., Peace Lily, Aloe Vera for AQI 1–100).</li>
-        <li><b>Music for Plant Growth:</b> Plays soothing meditation music to support healthier and faster plant development.</li>
-        <li><b>AI-Integrated Website & Application:</b> Provides plant suggestions based on location, displays ideal humidity, includes an API, and has a user-friendly interface.</li>
-      </ul>
+  <p><b>Key Features</b></p>
+  <ul>
+    <li><b>Self-Powered Electricity Generator:</b> Works without external power (only initial jumpstart required), ensuring uninterrupted, sustainable operation.</li>
+    <li><b>Automated Irrigation with Rain Sensor:</b> Detects rainfall and adjusts watering automatically to avoid over-irrigation.</li>
+    <li><b>Air Quality Index (AQI) Detection:</b> Monitors local AQI and suggests suitable plants (e.g., Peace Lily, Aloe Vera for AQI 1–100).</li>
+    <li><b>Music for Plant Growth:</b> Plays soothing meditation music to support healthier and faster plant development.</li>
+    <li><b>AI-Integrated Website & Application:</b> Provides plant suggestions based on location, displays ideal humidity, includes an API, and has a user-friendly interface.</li>
+  </ul>
 
-      <p><b>Overall Value</b></p>
-      <ul>
-        <li>Combines automation, sustainability, and artificial intelligence.</li>
-        <li>Offers a hands-free, eco-conscious plant care solution.</li>
-        <li>Ideal for households, urban gardening, and smart homes.</li>
-      </ul>
-    </section>
+  <p><b>Overall Value</b></p>
+  <ul>
+    <li>Combines automation, sustainability, and artificial intelligence.</li>
+    <li>Offers a hands-free, eco-conscious plant care solution.</li>
+    <li>Ideal for households, urban gardening, and smart homes.</li>
+  </ul>
+</section>
+
 
     <!-- Garden Guide -->
-    <section id="gardenguide" class="card">
-      <h2>Garden Guide</h2>
-      <article class="guide">
-        <h3>Watering 101</h3>
-        <p>Let the top 2–3 cm of soil dry before watering most houseplants. Overwatering is the #1 cause of plant issues.</p>
-      </article>
-      <article class="guide">
-        <h3>Light Basics</h3>
-        <p>Bright, indirect light works for many indoor plants. South windows are strong—use sheer curtains to diffuse light.</p>
-      </article>
-      <article class="guide">
-        <h3>Pot & Soil</h3>
-        <p>Use a well-draining mix and a pot with a hole. Repot yearly to refresh nutrients and root space.</p>
-      </article>
-      <article class="guide">
-        <h3>Pruning & Maintenance</h3>
-        <p>Trim dead leaves and stems regularly to encourage new growth and maintain plant health.</p>
-      </article>
-      <article class="guide">
-        <h3>Fertilizing</h3>
-        <p>Feed plants with a balanced fertilizer every 2–4 weeks during growing season. Reduce feeding in winter months.</p>
-      </article>
-      <article class="guide">
-        <h3>Pest Control</h3>
-        <p>Check leaves for pests like aphids or mites. Use neem oil spray or organic insecticides when necessary.</p>
-      </article>
-      <article class="guide">
-        <h3>Seasonal Care</h3>
-        <p>Adjust watering and light exposure depending on the season. Protect plants indoors during harsh winters.</p>
-      </article>
-    </section>
+<section id="gardenguide" class="card">
+  <h2>Garden Guide</h2>
 
-    <!-- PlantFlash -->
-    <section id="plantflash" class="card">
-      <h2>PlantFlash <span aria-hidden="true">⚡</span></h2>
-      <div class="flash" id="flashContainer">
-        <p id="flashText">Tap “Next” to learn a plant fun fact!</p>
-        <div class="row">
-          <button type="button" id="flashPrev" class="ghost">◀ Prev</button>
-          <button type="button" id="flashNext">Next ▶</button>
-        </div>
-      </div>
-    </section>
+  <article class="guide">
+    <h3>Watering 101</h3>
+    <p>Let the top 2–3 cm of soil dry before watering most houseplants. Overwatering is the #1 cause of plant issues.</p>
+  </article>
 
+  <article class="guide">
+    <h3>Light Basics</h3>
+    <p>Bright, indirect light works for many indoor plants. South windows are strong—use sheer curtains to diffuse light.</p>
+  </article>
+
+  <article class="guide">
+    <h3>Pot & Soil</h3>
+    <p>Use a well-draining mix and a pot with a hole. Repot yearly to refresh nutrients and root space.</p>
+  </article>
+
+  <article class="guide">
+    <h3>Pruning & Maintenance</h3>
+    <p>Trim dead leaves and stems regularly to encourage new growth and maintain plant health.</p>
+  </article>
+
+  <article class="guide">
+    <h3>Fertilizing</h3>
+    <p>Feed plants with a balanced fertilizer every 2–4 weeks during growing season. Reduce feeding in winter months.</p>
+  </article>
+
+  <article class="guide">
+    <h3>Pest Control</h3>
+    <p>Check leaves for pests like aphids or mites. Use neem oil spray or organic insecticides when necessary.</p>
+  </article>
+
+  <article class="guide">
+    <h3>Seasonal Care</h3>
+    <p>Adjust watering and light exposure depending on the season. Protect plants indoors during harsh winters.</p>
+  </article>
+
+</section>
+
+
+   <!-- PlantFlash -->
+<section id="plantflash" class="card">
+  <h2>PlantFlash <span aria-hidden="true">⚡</span></h2>
+  <div class="flash" id="flashContainer">
+    <p id="flashText">Tap “Next” to learn a plant fun fact!</p>
+    <div class="row">
+      <button type="button" id="flashPrev" class="ghost">◀ Prev</button>
+      <button type="button" id="flashNext">Next ▶</button>
+    </div>
+  </div>
+</section>
+ 
     <!-- History -->
     <section id="history" class="card">
       <h2>Plant/Crop History</h2>
