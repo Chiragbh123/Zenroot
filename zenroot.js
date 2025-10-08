@@ -13,23 +13,32 @@ const cityInput = $('#cityInput');
 const cityDropdown = $('#cityDropdown');
 const getWeatherBtn = $('#getWeatherBtn');
 const gpsBtn = $('#gpsBtn');
-const logoutBtn = $('#logoutBtn');
 
 const resetPasswordBtn = $('#resetPasswordBtn');
 const resetDialog = $('#resetDialog');
 const resetEmail = $('#resetEmail');
 const resetNewPass = $('#resetNewPass');
+const resetConfirmBtn = $('#resetConfirm');
+const resetCancelBtn = $('#resetCancel');
 
 const historyList = $('#historyList');
 const clearHistoryBtn = $('#clearHistory');
 
 const tabs = $$('.tab');
+const logoutTopBtn = $('#logoutTopBtn');
+const loading = $('#loading');
+
+// MSP checker
+const mspSelect = $('#mspSelect');
+const mspShowBtn = $('#mspShowBtn');
+const mspOutput = $('#mspOutput');
 
 // ===== STATE =====
-const weatherApiKey = "3e53efbde704401986192444250610"; // <- replace!
+// Replace with your real WeatherAPI key
+const weatherApiKey = "3e53efbde704401986192444250610";
 let currentCity = localStorage.getItem('lastCity') || "Mumbai";
 
-// Fun facts for PlantFlash
+// Fun facts
 const facts = [
   "Snake plant converts CO₂ to O₂ even at night.",
   "Aloe vera stores water in its leaves—great for beginners.",
@@ -38,6 +47,24 @@ const facts = [
   "Overwatering causes more plant deaths than underwatering."
 ];
 let factIndex = 0;
+
+// Prices (approx)
+const plantPrices = {
+  "Peace Lily": 350, "Boston Fern": 250, "Spider Plant": 200,
+  "English Ivy": 300, "Bamboo Palm": 450, "Areca Palm": 500,
+  "Snake Plant": 400, "Aloe Vera": 150, "Jade Plant": 250,
+  "Rubber Plant": 600, "ZZ Plant": 700
+};
+
+// MSP/FRP placeholders
+const mspCashCrops = {
+  "Cotton (Medium Staple)": 7710,
+  "Cotton (Long Staple)": 8110,
+  "Raw Jute": 5600,
+  "Copra (Milled)": 11582,
+  "Copra (Ball)": 11000,
+  "Sugarcane (FRP)": 340
+};
 
 // ===== UTIL =====
 const hash = async (text) => {
@@ -55,8 +82,13 @@ async function saveUserData(email, password) {
   setUsers(users);
 }
 function getUser() { return localStorage.getItem('zenrootUser'); }
-function saveUser(email, name=""){ localStorage.setItem('zenrootUser', email); if(name) localStorage.setItem('zenrootName', name); }
-function removeUser(){ localStorage.removeItem('zenrootUser'); }
+function saveUser(email, name=""){
+  localStorage.setItem('zenrootUser', email);
+  if(name) localStorage.setItem('zenrootName', name);
+}
+function removeUser(){
+  localStorage.removeItem('zenrootUser');
+}
 
 async function checkPassword(email, password){
   const users = getUsers();
@@ -83,7 +115,9 @@ function toast(msg){ alert(msg); }
 
 // ===== WEATHER =====
 async function getWeather(q){
-  weatherBox.textContent = "⏳ Loading weather...";
+  weatherBox.textContent = "";
+  loading.style.display = "block";
+
   try{
     const r = await fetch(`https://api.weatherapi.com/v1/current.json?key=${weatherApiKey}&q=${encodeURIComponent(q)}`);
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -106,6 +140,8 @@ async function getWeather(q){
   }catch(e){
     console.error(e);
     weatherBox.textContent = "❌ Could not fetch weather data. Check your API key or network.";
+  }finally{
+    loading.style.display = "none";
   }
 }
 
@@ -130,20 +166,39 @@ gpsBtn?.addEventListener('click', () => {
   }, ()=> getWeather("Mumbai"), {enableHighAccuracy:false, timeout:8000});
 });
 
-// Suggestions
+// ===== MSP helpers =====
+function formatMSP(name){
+  if(name in mspCashCrops){
+    const v = mspCashCrops[name];
+    if (name.includes("Sugarcane")) return ` — FRP ₹${v}/quintal`;
+    return ` — MSP ₹${v}/quintal`;
+  }
+  return "";
+}
+
+// ===== SUGGESTIONS =====
 function suggestPlants(temp, humidity){
   let suggestions = [];
   if (temp >= 30 && humidity >= 60) {
-    suggestions = ["🌿 Peace Lily", "🌿 Boston Fern", "🌿 Spider Plant"];
+    suggestions = ["Peace Lily", "Boston Fern", "Spider Plant"];
   } else if (temp <= 20 && humidity >= 60) {
-    suggestions = ["🌿 English Ivy", "🌿 Bamboo Palm", "🌿 Areca Palm"];
+    suggestions = ["English Ivy", "Bamboo Palm", "Areca Palm"];
   } else if (humidity < 40) {
-    suggestions = ["🌿 Snake Plant", "🌿 Aloe Vera", "🌿 Jade Plant"];
+    suggestions = ["Snake Plant", "Aloe Vera", "Jade Plant"];
   } else {
-    suggestions = ["🌿 Rubber Plant", "🌿 ZZ Plant"];
+    suggestions = ["Rubber Plant", "ZZ Plant"];
   }
 
-  resultBox.innerHTML = `<h3>🌱 Suggested Plants</h3><ul>${suggestions.map(p=>`<li class="plant-item">${p}</li>`).join('')}</ul>`;
+  resultBox.innerHTML = `
+    <h3>🌱 Suggested Plants / Crops</h3>
+    <ul>
+      ${suggestions.map(p=>{
+        const price = plantPrices[p] ? ` (avg ₹${plantPrices[p]})` : "";
+        const msp = formatMSP(p);
+        return `<li class="plant-item">🌿 ${p}${price}${msp}</li>`;
+      }).join('')}
+    </ul>
+  `;
   resultBox.style.display = "block";
 
   const history = JSON.parse(localStorage.getItem("plantHistory") || "[]");
@@ -164,6 +219,7 @@ loginForm.addEventListener('submit', async (e)=>{
     loginForm.reset();
     showForm(plantForm);
     getWeather(currentCity);
+    updateLogoutVisibility();
   }else{
     toast('❌ Invalid email or password.');
   }
@@ -181,14 +237,16 @@ signUpForm.addEventListener('submit', async (e)=>{
   toast(`✅ Account created for ${name}`);
   signUpForm.reset();
   showForm(loginForm);
+  updateLogoutVisibility();
 });
 
+// Reset password dialog
 resetPasswordBtn?.addEventListener('click', ()=>{
   resetEmail.value = "";
   resetNewPass.value = "";
   resetDialog.showModal();
 });
-$('#resetConfirm')?.addEventListener('click', async ()=>{
+resetConfirmBtn?.addEventListener('click', async ()=>{
   const email = resetEmail.value.trim();
   const newPass = resetNewPass.value;
   if(!email){ toast("Enter email."); return; }
@@ -196,47 +254,54 @@ $('#resetConfirm')?.addEventListener('click', async ()=>{
   const ok = await updatePassword(email, newPass);
   if(!ok){ toast("Email not found."); return; }
   toast("✅ Password updated!");
+  resetDialog.close();
 });
+resetCancelBtn?.addEventListener('click', ()=> resetDialog.close());
 
-// Nav between forms
-$('#toSignUp')?.addEventListener('click', ()=> showForm(signUpForm));
-$('#toLogin')?.addEventListener('click', ()=> showForm(loginForm));
-logoutBtn?.addEventListener('click', ()=>{
+// Logout
+logoutTopBtn?.addEventListener('click', ()=>{
   removeUser();
   toast('Logged out.');
   showForm(loginForm);
+  updateLogoutVisibility();
 });
 
-// ===== TABS / SECTIONS =====
+// Switch forms
+$('#toSignUp')?.addEventListener('click', ()=> showForm(signUpForm));
+$('#toLogin')?.addEventListener('click', ()=> showForm(loginForm));
+
+// ===== TABS =====
 function activateTab(id){
-  // button states
   tabs.forEach(t=>{
     const isActive = t.dataset.tab === id;
     t.classList.toggle('active', isActive);
     t.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
-  // section states
-  ['plantForm','abstract','growguide','plantflash','history']
+  ['plantForm','abstract','gardenguide','plantflash','history']
     .forEach(sec => $('#'+sec).classList.remove('active'));
   if(id === 'home'){ $('#plantForm').classList.add('active'); }
   else { $('#'+id).classList.add('active'); }
 }
+tabs.forEach(btn=> btn.addEventListener('click', ()=> activateTab(btn.dataset.tab)));
 
-tabs.forEach(btn=>{
-  btn.addEventListener('click', ()=> activateTab(btn.dataset.tab));
-});
-
-// ===== HISTORY RENDER =====
+// ===== HISTORY =====
 function renderHistory(){
   const history = JSON.parse(localStorage.getItem("plantHistory") || "[]").slice().reverse();
   if(history.length === 0){ historyList.innerHTML = "<p>No history yet.</p>"; return; }
-  historyList.innerHTML = history.map(h=>`
-    <div class="history-item">
-      <b>${h.city}</b> — ${h.date}<br/>
-      Temp: ${h.temp} °C, Humidity: ${h.humidity}%<br/>
-      ${h.plants.join(", ")}
-    </div>
-  `).join('');
+  historyList.innerHTML = history.map(h=>{
+    const plantsWithInfo = h.plants.map(p=>{
+      const price = plantPrices[p] ? ` (₹${plantPrices[p]})` : "";
+      const msp = formatMSP(p);
+      return `${p}${price}${msp ? ` — ${msp.replace(' — ','')}` : ""}`;
+    }).join(", ");
+    return `
+      <div class="history-item">
+        <b>${h.city}</b> — ${h.date}<br/>
+        Temp: ${h.temp} °C, Humidity: ${h.humidity}%<br/>
+        ${plantsWithInfo}
+      </div>
+    `;
+  }).join('');
 }
 clearHistoryBtn?.addEventListener('click', ()=>{
   if(confirm("Clear all history?")){
@@ -245,12 +310,70 @@ clearHistoryBtn?.addEventListener('click', ()=>{
   }
 });
 
-// ===== PLANTFLASH =====
-function renderFact(){ $('#flashText').textContent = facts[factIndex]; }
-$('#flashNext')?.addEventListener('click', ()=>{ factIndex = (factIndex+1)%facts.length; renderFact(); });
-$('#flashPrev')?.addEventListener('click', ()=>{ factIndex = (factIndex-1+facts.length)%facts.length; renderFact(); });
+// ===== PlantFlash (animated) =====
+function swapFactAnimated(nextText, direction = 'right'){
+  const container = $('#flashContainer');
+  const textEl = $('#flashText');
+  if(!container || !textEl) return;
 
-// ===== INIT =====
+  textEl.classList.remove('flash-enter-right','flash-enter-left','flash-leave-left','flash-leave-right');
+
+  const leaveClass = (direction === 'right') ? 'flash-leave-left' : 'flash-leave-right';
+  textEl.classList.add(leaveClass);
+
+  const onLeaveEnd = () => {
+    textEl.removeEventListener('animationend', onLeaveEnd);
+    textEl.textContent = nextText;
+    textEl.classList.remove(leaveClass);
+
+    const enterClass = (direction === 'right') ? 'flash-enter-right' : 'flash-enter-left';
+    textEl.classList.add(enterClass);
+
+    container.classList.remove('flash-pop');
+    container.offsetHeight; // reflow
+    container.classList.add('flash-pop');
+
+    const cleanup = () => {
+      textEl.classList.remove(enterClass);
+      textEl.removeEventListener('animationend', cleanup);
+    };
+    textEl.addEventListener('animationend', cleanup, {once:true});
+  };
+
+  textEl.addEventListener('animationend', onLeaveEnd, {once:true});
+}
+function renderFact(){ const el = $('#flashText'); if(el) el.textContent = facts[factIndex]; }
+$('#flashNext')?.addEventListener('click', ()=>{
+  const nextIdx = (factIndex + 1) % facts.length;
+  swapFactAnimated(facts[nextIdx], 'right');
+  factIndex = nextIdx;
+});
+$('#flashPrev')?.addEventListener('click', ()=>{
+  const prevIdx = (factIndex - 1 + facts.length) % facts.length;
+  swapFactAnimated(facts[prevIdx], 'left');
+  factIndex = prevIdx;
+});
+
+// MSP checker
+mspShowBtn?.addEventListener('click', ()=>{
+  const key = mspSelect?.value || "";
+  if(!key){ mspOutput.textContent = "Please select a crop."; return; }
+  const value = mspCashCrops[key];
+  if(value == null){
+    mspOutput.textContent = `${key}: Not available.`;
+  }else{
+    const tag = key.includes("Sugarcane") ? "FRP" : "MSP";
+    mspOutput.textContent = `${key}: ${tag} ₹${value}/quintal`;
+  }
+});
+
+// UI
+function updateLogoutVisibility(){
+  const loggedIn = Boolean(getUser());
+  if (logoutTopBtn) logoutTopBtn.hidden = !loggedIn;
+}
+
+// INIT
 window.addEventListener('load', ()=>{
   const user = getUser();
   if (user) {
@@ -262,8 +385,6 @@ window.addEventListener('load', ()=>{
   activateTab('home');
   renderFact();
   renderHistory();
-
-  // Button for manual fetch
+  updateLogoutVisibility();
   getWeatherBtn?.addEventListener('click', getWeatherFromInput);
 });
-
