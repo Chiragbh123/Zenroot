@@ -18,8 +18,6 @@ const resetPasswordBtn = $('#resetPasswordBtn');
 const resetDialog = $('#resetDialog');
 const resetEmail = $('#resetEmail');
 const resetNewPass = $('#resetNewPass');
-const resetConfirmBtn = $('#resetConfirm');
-const resetCancelBtn = $('#resetCancel');
 
 const historyList = $('#historyList');
 const clearHistoryBtn = $('#clearHistory');
@@ -28,17 +26,17 @@ const tabs = $$('.tab');
 const logoutTopBtn = $('#logoutTopBtn');
 const loading = $('#loading');
 
-// MSP checker
+// MSP checker controls
 const mspSelect = $('#mspSelect');
 const mspShowBtn = $('#mspShowBtn');
 const mspOutput = $('#mspOutput');
 
 // ===== STATE =====
-// Replace with your real WeatherAPI key
-const weatherApiKey = "3e53efbde704401986192444250610";
+// ⚠️ Replace with your real WeatherAPI key
+const weatherApiKey = "3e53efbde704401986192444250610"; // <- replace!
 let currentCity = localStorage.getItem('lastCity') || "Mumbai";
 
-// Fun facts
+// Fun facts for PlantFlash
 const facts = [
   "Snake plant converts CO₂ to O₂ even at night.",
   "Aloe vera stores water in its leaves—great for beginners.",
@@ -48,21 +46,30 @@ const facts = [
 ];
 let factIndex = 0;
 
-// Prices (approx)
+// ===== Plant Price Data (Approx Avg INR) =====
 const plantPrices = {
-  "Peace Lily": 350, "Boston Fern": 250, "Spider Plant": 200,
-  "English Ivy": 300, "Bamboo Palm": 450, "Areca Palm": 500,
-  "Snake Plant": 400, "Aloe Vera": 150, "Jade Plant": 250,
-  "Rubber Plant": 600, "ZZ Plant": 700
+  "Peace Lily": 350,
+  "Boston Fern": 250,
+  "Spider Plant": 200,
+  "English Ivy": 300,
+  "Bamboo Palm": 450,
+  "Areca Palm": 500,
+  "Snake Plant": 400,
+  "Aloe Vera": 150,
+  "Jade Plant": 250,
+  "Rubber Plant": 600,
+  "ZZ Plant": 700
 };
 
-// MSP/FRP placeholders
+// ===== MSP/FRP Data (₹ per quintal unless noted) — PLACEHOLDERS =====
+// Update with the latest official values when needed.
 const mspCashCrops = {
   "Cotton (Medium Staple)": 7710,
   "Cotton (Long Staple)": 8110,
   "Raw Jute": 5600,
   "Copra (Milled)": 11582,
   "Copra (Ball)": 11000,
+  // FRP (not MSP) is per quintal of sugarcane; shown for convenience:
   "Sugarcane (FRP)": 340
 };
 
@@ -125,7 +132,7 @@ async function getWeather(q){
     if(!data || !data.current) throw new Error("No data");
     const w = data.current;
     weatherBox.innerHTML = `
-      📍 <b>${data.location.name}, ${data.location.region || data.location.country}</b><br/>
+      📍 <b>${data.location.name}, ${data.location.region || ${data.location.country}}</b><br/>
       🌡️ Temp: ${w.temp_c} °C<br/>
       💧 Humidity: ${w.humidity}%<br/>
       🌬️ Wind: ${w.wind_kph} kph<br/>
@@ -176,7 +183,7 @@ function formatMSP(name){
   return "";
 }
 
-// ===== SUGGESTIONS =====
+// ===== SUGGESTIONS (with Avg Price + MSP if available) =====
 function suggestPlants(temp, humidity){
   let suggestions = [];
   if (temp >= 30 && humidity >= 60) {
@@ -189,6 +196,7 @@ function suggestPlants(temp, humidity){
     suggestions = ["Rubber Plant", "ZZ Plant"];
   }
 
+  // Render with avg price + MSP
   resultBox.innerHTML = `
     <h3>🌱 Suggested Plants / Crops</h3>
     <ul>
@@ -201,6 +209,7 @@ function suggestPlants(temp, humidity){
   `;
   resultBox.style.display = "block";
 
+  // Save in history
   const history = JSON.parse(localStorage.getItem("plantHistory") || "[]");
   history.push({ city: currentCity, date: new Date().toLocaleString(), temp, humidity, plants: suggestions });
   localStorage.setItem("plantHistory", JSON.stringify(history));
@@ -240,13 +249,12 @@ signUpForm.addEventListener('submit', async (e)=>{
   updateLogoutVisibility();
 });
 
-// Reset password dialog
 resetPasswordBtn?.addEventListener('click', ()=>{
   resetEmail.value = "";
   resetNewPass.value = "";
   resetDialog.showModal();
 });
-resetConfirmBtn?.addEventListener('click', async ()=>{
+$('#resetConfirm')?.addEventListener('click', async ()=>{
   const email = resetEmail.value.trim();
   const newPass = resetNewPass.value;
   if(!email){ toast("Enter email."); return; }
@@ -254,11 +262,9 @@ resetConfirmBtn?.addEventListener('click', async ()=>{
   const ok = await updatePassword(email, newPass);
   if(!ok){ toast("Email not found."); return; }
   toast("✅ Password updated!");
-  resetDialog.close();
 });
-resetCancelBtn?.addEventListener('click', ()=> resetDialog.close());
 
-// Logout
+// ===== LOGOUT (Topbar button) =====
 logoutTopBtn?.addEventListener('click', ()=>{
   removeUser();
   toast('Logged out.');
@@ -266,25 +272,30 @@ logoutTopBtn?.addEventListener('click', ()=>{
   updateLogoutVisibility();
 });
 
-// Switch forms
+// Nav between forms
 $('#toSignUp')?.addEventListener('click', ()=> showForm(signUpForm));
 $('#toLogin')?.addEventListener('click', ()=> showForm(loginForm));
 
-// ===== TABS =====
+// ===== TABS / SECTIONS =====
 function activateTab(id){
+  // button states
   tabs.forEach(t=>{
     const isActive = t.dataset.tab === id;
     t.classList.toggle('active', isActive);
     t.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
+  // section states
   ['plantForm','abstract','gardenguide','plantflash','history']
     .forEach(sec => $('#'+sec).classList.remove('active'));
   if(id === 'home'){ $('#plantForm').classList.add('active'); }
   else { $('#'+id).classList.add('active'); }
 }
-tabs.forEach(btn=> btn.addEventListener('click', ()=> activateTab(btn.dataset.tab)));
 
-// ===== HISTORY =====
+tabs.forEach(btn=>{
+  btn.addEventListener('click', ()=> activateTab(btn.dataset.tab));
+});
+
+// ===== HISTORY RENDER (show prices + MSP when present) =====
 function renderHistory(){
   const history = JSON.parse(localStorage.getItem("plantHistory") || "[]").slice().reverse();
   if(history.length === 0){ historyList.innerHTML = "<p>No history yet.</p>"; return; }
@@ -310,7 +321,7 @@ clearHistoryBtn?.addEventListener('click', ()=>{
   }
 });
 
-// ===== PlantFlash (animated) =====
+// ===== PLANTFLASH (animated) =====
 function swapFactAnimated(nextText, direction = 'right'){
   const container = $('#flashContainer');
   const textEl = $('#flashText');
@@ -330,7 +341,9 @@ function swapFactAnimated(nextText, direction = 'right'){
     textEl.classList.add(enterClass);
 
     container.classList.remove('flash-pop');
-    container.offsetHeight; // reflow
+    // force reflow
+    // eslint-disable-next-line no-unused-expressions
+    container.offsetHeight;
     container.classList.add('flash-pop');
 
     const cleanup = () => {
@@ -342,19 +355,32 @@ function swapFactAnimated(nextText, direction = 'right'){
 
   textEl.addEventListener('animationend', onLeaveEnd, {once:true});
 }
-function renderFact(){ const el = $('#flashText'); if(el) el.textContent = facts[factIndex]; }
+
+function renderFact(){
+  const textEl = $('#flashText');
+  if (textEl) textEl.textContent = facts[factIndex];
+}
+
 $('#flashNext')?.addEventListener('click', ()=>{
   const nextIdx = (factIndex + 1) % facts.length;
   swapFactAnimated(facts[nextIdx], 'right');
   factIndex = nextIdx;
 });
+
 $('#flashPrev')?.addEventListener('click', ()=>{
   const prevIdx = (factIndex - 1 + facts.length) % facts.length;
   swapFactAnimated(facts[prevIdx], 'left');
   factIndex = prevIdx;
 });
 
-// MSP checker
+// (Optional) Auto-advance every 6s
+// setInterval(()=>{
+//   const nextIdx = (factIndex + 1) % facts.length;
+///  swapFactAnimated(facts[nextIdx], 'right');
+//   factIndex = nextIdx;
+// }, 6000);
+
+// ===== MSP Checker logic =====
 mspShowBtn?.addEventListener('click', ()=>{
   const key = mspSelect?.value || "";
   if(!key){ mspOutput.textContent = "Please select a crop."; return; }
@@ -367,13 +393,13 @@ mspShowBtn?.addEventListener('click', ()=>{
   }
 });
 
-// UI
+// ===== UI Helpers =====
 function updateLogoutVisibility(){
   const loggedIn = Boolean(getUser());
   if (logoutTopBtn) logoutTopBtn.hidden = !loggedIn;
 }
 
-// INIT
+// ===== INIT =====
 window.addEventListener('load', ()=>{
   const user = getUser();
   if (user) {
@@ -386,5 +412,7 @@ window.addEventListener('load', ()=>{
   renderFact();
   renderHistory();
   updateLogoutVisibility();
+
+  // Button for manual fetch
   getWeatherBtn?.addEventListener('click', getWeatherFromInput);
 });
