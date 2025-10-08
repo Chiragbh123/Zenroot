@@ -26,10 +26,8 @@
       color:var(--ink);
     }
 
-    /* 🔽 Use your own image from your project (commit it for GitHub Pages) */
-    body{
-      background:url('images/bg.jpg') no-repeat center/cover fixed;
-    }
+    /* Use your own image file in the repo */
+    body{ background:url('images/bg.jpg') no-repeat center/cover fixed; }
 
     #overlay{position:fixed;inset:0;background:rgba(0,77,64,.30);z-index:-1;}
 
@@ -50,7 +48,6 @@
     }
     .tab.active,.tab:hover{background:var(--ink-2);color:#fff}
 
-    /* topbar logout */
     #logoutTopBtn{
       border:1px solid var(--danger);
       color:#fff;background:var(--danger);
@@ -104,17 +101,12 @@
 
     .lead{font-size:1.12rem;line-height:1.7}
 
-    /* History Cards */
     .history{display:flex;flex-direction:column;gap:.8rem}
     .history-item{
-      background:#fff;
-      border:1px solid #ddebe7;
-      border-radius:12px;
-      padding:1rem;
+      background:#fff;border:1px solid #ddebe7;border-radius:12px;padding:1rem;
       box-shadow:0 4px 10px rgba(0,0,0,0.08);
     }
 
-    /* MSP Box */
     .msp-box{
       background:#f7fff8;border:1px dashed #9ad1a5;border-radius:12px;
       padding:1rem;margin-top:1rem;
@@ -122,74 +114,51 @@
     .msp-row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
     .msp-value{font-weight:700}
 
-    /* Loading Spinner */
     #loading{display:none;text-align:center;margin:10px 0}
     .spinner{
-      border:4px solid #eee;
-      border-top:4px solid var(--ink-2);
-      border-radius:50%;
-      width:32px;height:32px;
-      animation:spin 1s linear infinite;
-      margin:6px auto 10px auto;
+      border:4px solid #eee;border-top:4px solid var(--ink-2);
+      border-radius:50%;width:32px;height:32px;
+      animation:spin 1s linear infinite;margin:6px auto 10px auto;
     }
     @keyframes spin{100%{transform:rotate(360deg)}}
 
-    @keyframes fadeIn{
-      from{opacity:0;transform:translateY(10px)}
-      to{opacity:1;transform:translateY(0)}
-    }
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     .plant-item{animation:fadeIn .6s ease}
 
-    /* --- PlantFlash: bigger & animated --- */
+    /* PlantFlash: bigger & animated */
     #plantflash .flash{
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      min-height:260px; padding:24px;
-      border-radius:16px;
-      background: linear-gradient(135deg, #e6fff4, #c6f3e7);
-      box-shadow: 0 10px 28px rgba(0,0,0,.12);
-      position: relative;
-      overflow:hidden;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:260px;padding:24px;border-radius:16px;
+      background:linear-gradient(135deg,#e6fff4,#c6f3e7);
+      box-shadow:0 10px 28px rgba(0,0,0,.12);position:relative;overflow:hidden;
     }
-    #plantflash h2{ display:flex; align-items:center; gap:.5rem; }
-
+    #plantflash h2{display:flex;align-items:center;gap:.5rem;}
     #flashText{
-      font-size: clamp(1.2rem, 2.6vw + .4rem, 2.2rem);
-      line-height: 1.5;
-      text-align: center;
-      margin: 10px 8px 16px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.55);
-      backdrop-filter: blur(4px);
+      font-size:clamp(1.2rem,2.6vw + .4rem,2.2rem);line-height:1.5;text-align:center;
+      margin:10px 8px 16px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.55);backdrop-filter:blur(4px);
     }
+    #plantflash .row{gap:.8rem;justify-content:center;}
+    #plantflash .row button{padding:.85rem 1.2rem;font-size:1rem;border-radius:12px;}
+    #flashNext{box-shadow:0 6px 16px rgba(0,121,107,.25);}
+    #flashPrev{box-shadow:0 6px 16px rgba(0,0,0,.08);}
 
-    #plantflash .row{ gap: .8rem; justify-content:center; }
-    #plantflash .row button{ padding: .85rem 1.2rem; font-size: 1rem; border-radius: 12px; }
-    #flashNext{ box-shadow: 0 6px 16px rgba(0,121,107,.25); }
-    #flashPrev{ box-shadow: 0 6px 16px rgba(0,0,0,.08); }
-
-    #plantflash .flash::before, 
-    #plantflash .flash::after{
-      content:"🌿"; position:absolute; font-size: 2rem; opacity:.18;
-      animation: floatY 6s ease-in-out infinite;
+    #plantflash .flash::before,#plantflash .flash::after{
+      content:"🌿";position:absolute;font-size:2rem;opacity:.18;animation:floatY 6s ease-in-out infinite;
     }
-    #plantflash .flash::before{ left:14px; top:14px; }
-    #plantflash .flash::after{ right:14px; bottom:14px; animation-delay: 1.5s; }
-
-    @keyframes floatY{ 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-10px) } }
-    @keyframes popIn{ 0%{ opacity:0; transform: translateY(10px) scale(.98) } 100%{ opacity:1; transform: translateY(0) scale(1) } }
-    @keyframes slideInRight{ 0%{ opacity:0; transform: translateX(24px) scale(.98) } 100%{ opacity:1; transform: translateX(0) scale(1) } }
-    @keyframes slideInLeft{ 0%{ opacity:0; transform: translateX(-24px) scale(.98) } 100%{ opacity:1; transform: translateX(0) scale(1) } }
-    @keyframes slideOutLeft{ 0%{ opacity:1; transform: translateX(0) scale(1) } 100%{ opacity:0; transform: translateX(-24px) scale(.98) } }
-    @keyframes slideOutRight{ 0%{ opacity:1; transform: translateX(0) scale(1) } 100%{ opacity:0; transform: translateX(24px) scale(.98) } }
-
-    .flash-enter-right{ animation: slideInRight .38s ease both; }
-    .flash-enter-left{  animation: slideInLeft  .38s ease both; }
-    .flash-leave-left{  animation: slideOutLeft .28s ease both; }
-    .flash-leave-right{ animation: slideOutRight .28s ease both; }
-    .flash-pop{ animation: popIn .35s ease both; }
-
-    #plantflash.card{ padding: 1.4rem 1.4rem 1.2rem; }
+    #plantflash .flash::before{left:14px;top:14px}
+    #plantflash .flash::after{right:14px;bottom:14px;animation-delay:1.5s}
+    @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    @keyframes popIn{0%{opacity:0;transform:translateY(10px) scale(.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes slideInRight{0%{opacity:0;transform:translateX(24px) scale(.98)}100%{opacity:1;transform:translateX(0) scale(1)}}
+    @keyframes slideInLeft{0%{opacity:0;transform:translateX(-24px) scale(.98)}100%{opacity:1;transform:translateX(0) scale(1)}}
+    @keyframes slideOutLeft{0%{opacity:1;transform:translateX(0) scale(1)}100%{opacity:0;transform:translateX(-24px) scale(.98)}}
+    @keyframes slideOutRight{0%{opacity:1;transform:translateX(0) scale(1)}100%{opacity:0;transform:translateX(24px) scale(.98)}}
+    .flash-enter-right{animation:slideInRight .38s ease both}
+    .flash-enter-left{animation:slideInLeft .38s ease both}
+    .flash-leave-left{animation:slideOutLeft .28s ease both}
+    .flash-leave-right{animation:slideOutRight .28s ease both}
+    .flash-pop{animation:popIn .35s ease both}
+    #plantflash.card{padding:1.4rem 1.4rem 1.2rem}
 
     @media (max-width:960px){
       #sidebar{display:none}
@@ -224,10 +193,10 @@
   </aside>
 
   <section id="content">
-    <!-- 🔄 Loading Spinner -->
+    <!-- Loading Spinner -->
     <div id="loading"><div class="spinner"></div><p>Fetching weather...</p></div>
 
-    <!-- Auth: Login -->
+    <!-- Login -->
     <form id="loginForm" class="card active" autocomplete="on">
       <h2>Login</h2>
       <label>Email <input type="email" id="loginEmail" placeholder="you@example.com" required/></label>
@@ -239,7 +208,7 @@
       <div class="switch-link" id="toSignUp" role="button" tabindex="0">Don’t have an account? Sign up</div>
     </form>
 
-    <!-- Auth: Sign Up -->
+    <!-- Sign Up -->
     <form id="signUpForm" class="card" autocomplete="on">
       <h2>Sign Up</h2>
       <label>Full Name <input type="text" id="signUpName" placeholder="Full Name" required/></label>
@@ -247,11 +216,13 @@
       <label>Password 
         <input type="password" id="signUpPassword" placeholder="At least 6 characters" minlength="6" required/>
       </label>
-      <button type="submit">Create Account</button>
-      <div class="switch-link" id="toLogin" role="button" tabindex="0">Already have an account? Login</div>
+      <div class="row">
+        <button type="submit">Create Account</button>
+        <button type="button" id="toLogin" class="ghost">Already have an account? Login</button>
+      </div>
     </form>
 
-    <!-- App: Weather + Suggestions -->
+    <!-- App -->
     <section id="plantForm" class="card">
       <h2>Weather & Plant Suggestions</h2>
       <p>Enter or select your city to fetch current weather and get personalized plant suggestions.</p>
@@ -277,7 +248,6 @@
       <div class="result" id="weatherBox" aria-live="polite">Weather not loaded.</div>
       <div class="result" id="resultBox" style="display:none;"></div>
 
-      <!-- MSP checker (manual lookup) -->
       <div class="msp-box" id="mspBox">
         <h3>💹 Check MSP (Cash Crops)</h3>
         <div class="msp-row">
@@ -340,34 +310,13 @@
     <!-- Garden Guide -->
     <section id="gardenguide" class="card">
       <h2>Garden Guide</h2>
-      <article class="guide">
-        <h3>Watering 101</h3>
-        <p>Let the top 2–3 cm of soil dry before watering most houseplants. Overwatering is the #1 cause of plant issues.</p>
-      </article>
-      <article class="guide">
-        <h3>Light Basics</h3>
-        <p>Bright, indirect light works for many indoor plants. South windows are strong—use sheer curtains to diffuse light.</p>
-      </article>
-      <article class="guide">
-        <h3>Pot & Soil</h3>
-        <p>Use a well-draining mix and a pot with a hole. Repot yearly to refresh nutrients and root space.</p>
-      </article>
-      <article class="guide">
-        <h3>Pruning & Maintenance</h3>
-        <p>Trim dead leaves and stems regularly to encourage new growth and maintain plant health.</p>
-      </article>
-      <article class="guide">
-        <h3>Fertilizing</h3>
-        <p>Feed plants with a balanced fertilizer every 2–4 weeks during growing season. Reduce feeding in winter months.</p>
-      </article>
-      <article class="guide">
-        <h3>Pest Control</h3>
-        <p>Check leaves for pests like aphids or mites. Use neem oil spray or organic insecticides when necessary.</p>
-      </article>
-      <article class="guide">
-        <h3>Seasonal Care</h3>
-        <p>Adjust watering and light exposure depending on the season. Protect plants indoors during harsh winters.</p>
-      </article>
+      <article class="guide"><h3>Watering 101</h3><p>Let the top 2–3 cm of soil dry before watering most houseplants. Overwatering is the #1 cause of plant issues.</p></article>
+      <article class="guide"><h3>Light Basics</h3><p>Bright, indirect light works for many indoor plants. South windows are strong—use sheer curtains to diffuse light.</p></article>
+      <article class="guide"><h3>Pot & Soil</h3><p>Use a well-draining mix and a pot with a hole. Repot yearly to refresh nutrients and root space.</p></article>
+      <article class="guide"><h3>Pruning & Maintenance</h3><p>Trim dead leaves and stems regularly to encourage new growth and maintain plant health.</p></article>
+      <article class="guide"><h3>Fertilizing</h3><p>Feed plants with a balanced fertilizer every 2–4 weeks during growing season. Reduce feeding in winter months.</p></article>
+      <article class="guide"><h3>Pest Control</h3><p>Check leaves for pests like aphids or mites. Use neem oil spray or organic insecticides when necessary.</p></article>
+      <article class="guide"><h3>Seasonal Care</h3><p>Adjust watering and light exposure depending on the season. Protect plants indoors during harsh winters.</p></article>
     </section>
 
     <!-- PlantFlash -->
@@ -393,18 +342,17 @@
 
 <!-- Reset Password Modal -->
 <dialog id="resetDialog">
-  <form method="dialog" class="card modal">
+  <form method="dialog" class="card modal" id="resetForm">
     <h3>Reset Password</h3>
     <label>Email <input type="email" id="resetEmail" required/></label>
     <label>New Password <input type="password" id="resetNewPass" minlength="6" required/></label>
     <div class="row">
-      <button id="resetConfirm" value="confirm">Update</button>
-      <button class="ghost" value="cancel">Cancel</button>
+      <button type="button" id="resetConfirm" value="confirm">Update</button>
+      <button type="button" class="ghost" id="resetCancel" value="cancel">Cancel</button>
     </div>
   </form>
 </dialog>
 
-<!-- JS kept separate -->
 <script src="zenroot.js" defer></script>
 </body>
 </html>
