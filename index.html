@@ -1,358 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ZenRoot AI • Plant Wellness</title>
-
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
   <style>
+    /* --- Theme variables (light by default) --- */
     :root{
       --ink:#004d40;
       --ink-2:#00796b;
       --paper:rgba(255,255,255,.88);
       --mint:#b2dfdb;
-      --danger:#c62828;
-      --accent:#fdd835;
-      --border:#e2e8f0;
+      --success:#32a77c;
+
+      --bg-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');
+      --overlay-color: rgba(0,77,64,.30);
+
+      --card-bg: #fff;
+      --card-border: #e6efec;
+      --topbar-border: #e2e8f0;
+      --sidebar-bg: var(--ink);
+      --sidebar-color: #fff;
+      --tab-bg: transparent;
+      --tab-color: var(--ink-2);
+      --tab-active-bg: var(--ink-2);
+      --tab-active-color: #fff;
+      --button-bg: var(--ink-2);
+      --button-color: #fff;
+      --result-bg: var(--mint);
+      --backdrop-filter: saturate(1.2) blur(6px);
+      --toggle-bg: rgba(0,0,0,0.05);
+      --toggle-color: var(--ink-2);
+      --toggle-pressed-bg: var(--ink-2);
+      --toggle-pressed-color: #ffffff;
+    }
+
+    /* --- Dark theme overrides --- */
+    [data-theme="dark"]{
+      --ink: #d7f3ed;
+      --ink-2: #70e1c7;
+      --paper: rgba(3,17,10,0.6);
+      --mint: #144a3a;
+      --success: #5bd1a0;
+
+      --bg-image: linear-gradient(90deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));
+      --overlay-color: rgba(0,0,0,.5);
+
+      --card-bg: rgba(7,20,16,0.65);
+      --card-border: rgba(255,255,255,0.03);
+      --topbar-border: rgba(255,255,255,0.03);
+      --sidebar-bg: #06201a;
+      --sidebar-color: #d7f3ed;
+      --tab-bg: transparent;
+      --tab-color: var(--ink-2);
+      --tab-active-bg: rgba(255,255,255,0.06);
+      --tab-active-color: #d7f3ed;
+      --button-bg: rgba(255,255,255,0.06);
+      --button-color: var(--ink-2);
+      --result-bg: rgba(11,50,40,0.6);
+      --backdrop-filter: saturate(1.05) blur(4px);
+
+      --toggle-bg: rgba(255,255,255,0.06);
+      --toggle-color: var(--ink-2);
+      --toggle-pressed-bg: #2bb79b; /* changed dark toggle color */
+      --toggle-pressed-color: #022;
     }
 
     *{box-sizing:border-box}
-    html,body{
-      height:100%;margin:0;
-      font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;
-      color:var(--ink);
-    }
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;color:var(--ink);transition:color .25s, background .25s}
+    body{background:var(--bg-image) no-repeat center/cover fixed}
+    #overlay{position:fixed;inset:0;background:var(--overlay-color);z-index:-1;transition:background .25s}
 
-    /* Use your own image file in the repo */
-    body{ background:url('images/bg.jpg') no-repeat center/cover fixed; }
-
-    #overlay{position:fixed;inset:0;background:rgba(0,77,64,.30);z-index:-1;}
-
-    .topbar{
-      display:flex;align-items:center;gap:1rem;justify-content:space-between;
-      padding:0.75rem 1rem;background:var(--paper);backdrop-filter:saturate(1.2) blur(6px);
-      border-bottom:1px solid var(--border);
-    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--paper);backdrop-filter:var(--backdrop-filter);border-bottom:1px solid var(--topbar-border);transition:background .25s,border-color .25s}
     .brand{display:flex;align-items:center;gap:.5rem}
     .brand .logo{font-size:1.4rem}
     .brand .title{font-weight:700;letter-spacing:.2px}
 
     .tabs{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
     .tab{
-      border:1px solid var(--ink-2);background:transparent;color:var(--ink-2);
-      padding:.45rem .8rem;border-radius:999px;cursor:pointer;font-weight:600;
-      transition:all .25s ease;
+      border:1px solid var(--ink-2); background:var(--tab-bg); color:var(--tab-color);
+      padding:.45rem .8rem; border-radius:999px; cursor:pointer; font-weight:600; transition:all .25s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .tab.active,.tab:hover{background:var(--ink-2);color:#fff}
+    .tab.active, .tab:hover{background:var(--tab-active-bg); color:var(--tab-active-color)}
+    .tab[aria-selected="true"]{box-shadow:0 6px 18px rgba(0,0,0,.06)}
 
-    #logoutTopBtn{
-      border:1px solid var(--danger);
-      color:#fff;background:var(--danger);
-      padding:.45rem .8rem;border-radius:999px;cursor:pointer;font-weight:700;
-      transition:transform .2s ease;
+    /* Theme toggle */
+    .theme-toggle{
+      margin-left:.5rem;border-radius:10px;padding:.45rem .7rem;border:1px solid rgba(0,0,0,0.06);
+      background:var(--toggle-bg);cursor:pointer;display:flex;align-items:center;gap:.5rem;font-weight:700;
+      transition:transform .12s ease, background .25s, color .25s, box-shadow .15s;
     }
-    #logoutTopBtn:hover{transform:scale(1.05)}
-    #logoutTopBtn[hidden]{display:none !important;}
+    .theme-toggle:active{transform:scale(.985)}
+    .theme-toggle[aria-pressed="true"]{
+      background:var(--toggle-pressed-bg);
+      color:var(--toggle-pressed-color);
+      box-shadow:0 8px 24px rgba(0,0,0,.12);
+    }
 
     #app{display:flex;min-height:calc(100vh - 56px)}
-    #sidebar{
-      width:30%;background:var(--ink);color:#fff;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;padding:2rem;text-align:center
-    }
+    #sidebar{width:30%;background:var(--sidebar-bg);color:var(--sidebar-color);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;transition:background .25s,color .25s}
     #sidebar h1{font-size:2.2rem;margin:.2rem 0 0}
-    #sidebar p{opacity:.9}
+    #content{width:70%;padding:2rem;overflow:auto;background:var(--paper);transition:background .25s}
 
-    #content{width:70%;padding:2rem;overflow:auto;background:var(--paper)}
+    .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:1.2rem;margin-bottom:1.2rem;box-shadow:0 6px 20px rgba(0,0,0,.06);color:var(--ink);transition:background .25s,border-color .25s,color .25s;}
 
-    .card{
-      background:#fff;border:1px solid #e6efec;border-radius:14px;padding:1.2rem;
-      margin:0 0 1.2rem 0;box-shadow:0 6px 20px rgba(0,0,0,.06);
-      animation:fadeIn .6s ease;max-width:920px
+/* --- Tab transition styles (smooth show/hide) --- */
+    #content > section.card{
+      max-height:0;
+      opacity:0;
+      overflow:hidden;
+      transform:translateY(8px);
+      transition: max-height .48s cubic-bezier(.2,.9,.2,1), opacity .38s ease, transform .38s cubic-bezier(.2,.9,.2,1);
+      margin-bottom: 1rem;
     }
-    .card.modal{max-width:420px;margin:0 auto}
+    #content > section.card.active{
+      max-height:1600px;
+      opacity:1;
+      transform:translateY(0);
+    }
 
     label{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem}
-    input,select,button{
-      padding:.9rem;border-radius:10px;border:1.5px solid var(--ink-2);font-size:1rem
-    }
-    button{
-      background:var(--ink-2);color:#fff;font-weight:700;cursor:pointer;
-      transition:.25s ease;
-    }
-    button:hover{background:var(--ink);transform:translateY(-1px)}
-    button.ghost{background:transparent;color:var(--ink-2)}
-    button.danger{background:var(--danger);border-color:#b71c1c}
-    button.danger.ghost{background:transparent;color:var(--danger);border-color:var(--danger)}
-
+    input,select,button{padding:.9rem;border-radius:10px;border:1.5px solid var(--ink-2);font-size:1rem;background:transparent;color:var(--ink)}
+    button{background:var(--button-bg);color:var(--button-color);font-weight:700;cursor:pointer;transition:filter .18s}
+    button.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--ink-2)}
     .row{display:flex;gap:.6rem;flex-wrap:wrap}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 
-    .result{background:var(--mint);padding:1rem 1.2rem;border-radius:12px;margin-top:.8rem}
-    #weatherBox img{width:60px;vertical-align:middle;margin-top:10px}
-    .switch-link{margin-top:.4rem;color:var(--ink-2);cursor:pointer;text-decoration:underline}
-
-    /* Sections default hidden; JS toggles via tabs */
-    form.card,section.card{display:none}
-    form.card.active,section.card.active{display:block}
-    #loginForm.active,#signUpForm.active{display:block}
-
-    .lead{font-size:1.12rem;line-height:1.7}
-
-    .history{display:flex;flex-direction:column;gap:.8rem}
-    .history-item{
-      background:#fff;border:1px solid #ddebe7;border-radius:12px;padding:1rem;
-      box-shadow:0 4px 10px rgba(0,0,0,0.08);
-    }
-
-    .msp-box{
-      background:#f7fff8;border:1px dashed #9ad1a5;border-radius:12px;
-      padding:1rem;margin-top:1rem;
-    }
-    .msp-row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
-    .msp-value{font-weight:700}
-
-    #loading{display:none;text-align:center;margin:10px 0}
-    .spinner{
-      border:4px solid #eee;border-top:4px solid var(--ink-2);
-      border-radius:50%;width:32px;height:32px;
-      animation:spin 1s linear infinite;margin:6px auto 10px auto;
-    }
-    @keyframes spin{100%{transform:rotate(360deg)}}
-
-    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    .plant-item{animation:fadeIn .6s ease}
-
-    /* PlantFlash: bigger & animated */
-    #plantflash .flash{
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      min-height:260px;padding:24px;border-radius:16px;
-      background:linear-gradient(135deg,#e6fff4,#c6f3e7);
-      box-shadow:0 10px 28px rgba(0,0,0,.12);position:relative;overflow:hidden;
-    }
-    #plantflash h2{display:flex;align-items:center;gap:.5rem;}
-    #flashText{
-      font-size:clamp(1.2rem,2.6vw + .4rem,2.2rem);line-height:1.5;text-align:center;
-      margin:10px 8px 16px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.55);backdrop-filter:blur(4px);
-    }
-    #plantflash .row{gap:.8rem;justify-content:center;}
-    #plantflash .row button{padding:.85rem 1.2rem;font-size:1rem;border-radius:12px;}
-    #flashNext{box-shadow:0 6px 16px rgba(0,121,107,.25);}
-    #flashPrev{box-shadow:0 6px 16px rgba(0,0,0,.08);}
-
-    #plantflash .flash::before,#plantflash .flash::after{
-      content:"🌿";position:absolute;font-size:2rem;opacity:.18;animation:floatY 6s ease-in-out infinite;
-    }
-    #plantflash .flash::before{left:14px;top:14px}
-    #plantflash .flash::after{right:14px;bottom:14px;animation-delay:1.5s}
-    @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-    @keyframes popIn{0%{opacity:0;transform:translateY(10px) scale(.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
-    @keyframes slideInRight{0%{opacity:0;transform:translateX(24px) scale(.98)}100%{opacity:1;transform:translateX(0) scale(1)}}
-    @keyframes slideInLeft{0%{opacity:0;transform:translateX(-24px) scale(.98)}100%{opacity:1;transform:translateX(0) scale(1)}}
-    @keyframes slideOutLeft{0%{opacity:1;transform:translateX(0) scale(1)}100%{opacity:0;transform:translateX(-24px) scale(.98)}}
-    @keyframes slideOutRight{0%{opacity:1;transform:translateX(0) scale(1)}100%{opacity:0;transform:translateX(24px) scale(.98)}}
-    .flash-enter-right{animation:slideInRight .38s ease both}
-    .flash-enter-left{animation:slideInLeft .38s ease both}
-    .flash-leave-left{animation:slideOutLeft .28s ease both}
-    .flash-leave-right{animation:slideOutRight .28s ease both}
-    .flash-pop{animation:popIn .35s ease both}
-    #plantflash.card{padding:1.4rem 1.4rem 1.2rem}
+    .result{background:var(--result-bg);padding:1rem 1.2rem;border-radius:12px;margin-top:.8rem}
+    .lead{font-size:1.05rem;line-height:1.6}
 
     @media (max-width:960px){
       #sidebar{display:none}
       #content{width:100%}
       .grid{grid-template-columns:1fr}
-      button{width:100%}
     }
+
+    /* Contact / Profiles specific styles */
+    .profiles-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:1rem;
+      margin-top:1rem;
+    }
+    .profile-card{
+      background:var(--card-bg);
+      border:1px solid var(--card-border);
+      border-radius:12px;
+      padding:1.2rem;
+      text-align:center;
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .profile-card:hover{ transform:translateY(-6px); box-shadow:0 12px 30px rgba(0,0,0,.08) }
+    .avatar{
+      width:88px; height:88px; border-radius:999px; display:inline-block; line-height:88px; font-size:32px;
+      background:var(--mint); color:var(--ink-2); margin-bottom:.8rem;
+    }
+    .profile-name{ font-weight:700; margin:6px 0 }
+    .profile-email{ display:block; margin-top:.5rem; color:var(--ink-2); text-decoration:none; word-break:break-all }
+    @media (max-width:1100px){
+      .profiles-grid{ grid-template-columns:repeat(2,1fr) }
+    }
+    @media (max-width:640px){
+      .profiles-grid{ grid-template-columns:1fr }
+    }
+
+    /* small utilities */
+    .top-controls{display:flex;align-items:center;gap:.5rem}
+    button[type="button"]{border:none}
+
+    /* Camera UI */
+    .camera-controls{display:flex;gap:.5rem;align-items:center;justify-content:center;margin-top:.6rem}
+    video#cameraVideo{max-width:100%;border-radius:8px;border:2px solid var(--ink-2);display:block;margin:0 auto 0.6rem}
+    .camera-actions{display:flex;gap:.5rem;justify-content:center}
+    .camera-hidden{display:none}
+    .small-btn{padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:var(--ink-2);font-weight:700;cursor:pointer}
+    .icon-btn{padding:.6rem .75rem;border-radius:999px;font-size:1.1rem}
   </style>
 </head>
 <body>
-<div id="overlay" aria-hidden="true"></div>
+  <div id="overlay" aria-hidden="true"></div>
 
-<header class="topbar">
-  <div class="brand">
-    <span class="logo">🪴</span>
-    <span class="title">ZenRoot AI</span>
-  </div>
-  <nav class="tabs" role="tablist" aria-label="Sections">
-    <button class="tab active" data-tab="home" role="tab" aria-selected="true">Home</button>
-    <button class="tab" data-tab="abstract" role="tab">Abstract</button>
-    <button class="tab" data-tab="gardenguide" role="tab">Garden Guide</button>
-    <button class="tab" data-tab="plantflash" role="tab">PlantFlash</button>
-    <button class="tab" data-tab="history" role="tab">History</button>
-    <button id="logoutTopBtn" title="Logout" hidden>Logout</button>
-  </nav>
-</header>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🪴</span>
+      <span class="title">ZenRoot AI</span>
+    </div>
 
-<main id="app" role="main">
-  <aside id="sidebar">
-    <h1>ZenRoot AI</h1>
-    <p>Smart plant care powered by AI + weather</p>
-  </aside>
+    <div class="top-controls" style="display:flex;align-items:center;gap:1rem;">
+      <nav class="tabs" role="tablist" aria-label="Sections">
+        <button type="button" class="tab active" data-tab="home" role="tab" aria-selected="true">Home</button>
+        <button type="button" class="tab" data-tab="aiengine" role="tab">🤖 AI Engine</button>
+        <button type="button" class="tab" data-tab="abstract" role="tab">Abstract</button>
+        <button type="button" class="tab" data-tab="contact" role="tab">Contact Us</button>
+      </nav>
 
-  <section id="content">
-    <!-- Loading Spinner -->
-    <div id="loading"><div class="spinner"></div><p>Fetching weather...</p></div>
+      <!-- Theme toggle -->
+      <button id="themeToggle" class="theme-toggle" aria-pressed="false" title="Toggle dark mode" type="button">
+        <span id="themeIcon">☀️</span>
+        <span id="themeLabel" style="font-weight:600;margin-left:4px;">Light</span>
+      </button>
+    </div>
+  </header>
 
-    <!-- Login -->
-    <form id="loginForm" class="card active" autocomplete="on">
-      <h2>Login</h2>
-      <label>Email <input type="email" id="loginEmail" placeholder="you@example.com" required/></label>
-      <label>Password <input type="password" id="loginPassword" placeholder="••••••••" required/></label>
-      <div class="row">
-        <button type="submit">Login</button>
-        <button type="button" id="resetPasswordBtn" class="ghost">Reset Password</button>
-      </div>
-      <div class="switch-link" id="toSignUp" role="button" tabindex="0">Don’t have an account? Sign up</div>
-    </form>
+  <main id="app" role="main">
+    <aside id="sidebar">
+      <h1>ZenRoot AI</h1>
+      <p>Smart plant care powered by AI + weather</p>
+    </aside>
 
-    <!-- Sign Up -->
-    <form id="signUpForm" class="card" autocomplete="on">
-      <h2>Sign Up</h2>
-      <label>Full Name <input type="text" id="signUpName" placeholder="Full Name" required/></label>
-      <label>Email <input type="email" id="signUpEmail" placeholder="you@example.com" required/></label>
-      <label>Password 
-        <input type="password" id="signUpPassword" placeholder="At least 6 characters" minlength="6" required/>
-      </label>
-      <div class="row">
-        <button type="submit">Create Account</button>
-        <button type="button" id="toLogin" class="ghost">Already have an account? Login</button>
-      </div>
-    </form>
+    <section id="content">
+      <!-- Home -->
+      <section id="home" class="card active">
+        <h2>Weather & Plant Suggestions</h2>
+        <p>Enter or select your city to fetch current weather and get personalized plant suggestions.</p>
 
-    <!-- App -->
-    <section id="plantForm" class="card">
-      <h2>Weather & Plant Suggestions</h2>
-      <p>Enter or select your city to fetch current weather and get personalized plant suggestions.</p>
-
-      <div class="grid">
-        <label>Choose a city
-          <select id="cityDropdown">
-            <option value="">— Select a City —</option>
-            <option>Delhi</option><option>Mumbai</option><option>Chennai</option>
-            <option>Kolkata</option><option>Bengaluru</option><option>Ahmedabad</option>
-          </select>
-        </label>
-        <label>Or type a city
-          <input type="text" id="cityInput" placeholder="e.g., Pune"/>
-        </label>
-      </div>
-
-      <div class="row">
-        <button type="button" id="getWeatherBtn">Get Weather + Suggest Plants</button>
-        <button type="button" id="gpsBtn" class="ghost">Use My Location</button>
-      </div>
-
-      <div class="result" id="weatherBox" aria-live="polite">Weather not loaded.</div>
-      <div class="result" id="resultBox" style="display:none;"></div>
-
-      <div class="msp-box" id="mspBox">
-        <h3>💹 Check MSP (Cash Crops)</h3>
-        <div class="msp-row">
-          <label style="flex:1 1 240px">
-            Select Crop
-            <select id="mspSelect">
-              <option value="">— Choose —</option>
-              <option value="Cotton (Medium Staple)">Cotton (Medium Staple)</option>
-              <option value="Cotton (Long Staple)">Cotton (Long Staple)</option>
-              <option value="Raw Jute">Raw Jute</option>
-              <option value="Copra (Milled)">Copra (Milled)</option>
-              <option value="Copra (Ball)">Copra (Ball)</option>
-              <option value="Sugarcane (FRP)">Sugarcane (FRP)</option>
+        <div class="grid">
+          <label>Choose a city
+            <select id="cityDropdown">
+              <option value="">— Select a City —</option>
+              <option>Delhi</option><option>Mumbai</option><option>Chennai</option>
+              <option>Kolkata</option><option>Bengaluru</option><option>Ahmedabad</option>
             </select>
           </label>
-          <button type="button" id="mspShowBtn">Show MSP</button>
+          <label>Or type a city
+            <input type="text" id="cityInput" placeholder="e.g., Pune" />
+          </label>
         </div>
-        <p id="mspOutput" class="msp-value"></p>
-        <small>Note: Values are placeholders for demo. Update with latest official MSP/FRP.</small>
-      </div>
-    </section>
 
-    <!-- Abstract -->
-    <section id="abstract" class="card">
-      <h2>Abstract</h2>
-      <p class="lead">
-        <strong>ZenRoot AI</strong> blends live weather data with simple plant heuristics to give you 
-        easy, actionable care suggestions. No sensors needed—just your city.
-      </p>
-      <ul>
-        <li><b>GreenMatch:</b> Suggests plants based on temperature + humidity.</li>
-        <li><b>Garden Guide:</b> Friendly, focused mini-articles.</li>
-        <li><b>PlantFlash:</b> Bite-sized fun facts to learn on the go.</li>
-      </ul>
-
-      <h3>🌱 AI-Powered Automated Plant Care System</h3>
-      <p><b>Project Aim</b></p>
-      <ul>
-        <li>To provide busy households with a self-sustaining, AI-powered automated irrigation system.</li>
-        <li>To ensure smart, eco-friendly, and hassle-free plant care without external electricity dependency.</li>
-      </ul>
-
-      <p><b>Key Features</b></p>
-      <ul>
-        <li><b>Self-Powered Electricity Generator:</b> Works without external power (only initial jumpstart required), ensuring uninterrupted, sustainable operation.</li>
-        <li><b>Automated Irrigation with Rain Sensor:</b> Detects rainfall and adjusts watering automatically to avoid over-irrigation.</li>
-        <li><b>Air Quality Index (AQI) Detection:</b> Monitors local AQI and suggests suitable plants (e.g., Peace Lily, Aloe Vera for AQI 1–100).</li>
-        <li><b>Music for Plant Growth:</b> Plays soothing meditation music to support healthier and faster plant development.</li>
-        <li><b>AI-Integrated Website & Application:</b> Provides plant suggestions based on location, displays ideal humidity, includes an API, and has a user-friendly interface.</li>
-      </ul>
-
-      <p><b>Overall Value</b></p>
-      <ul>
-        <li>Combines automation, sustainability, and artificial intelligence.</li>
-        <li>Offers a hands-free, eco-conscious plant care solution.</li>
-        <li>Ideal for households, urban gardening, and smart homes.</li>
-      </ul>
-    </section>
-
-    <!-- Garden Guide -->
-    <section id="gardenguide" class="card">
-      <h2>Garden Guide</h2>
-      <article class="guide"><h3>Watering 101</h3><p>Let the top 2–3 cm of soil dry before watering most houseplants. Overwatering is the #1 cause of plant issues.</p></article>
-      <article class="guide"><h3>Light Basics</h3><p>Bright, indirect light works for many indoor plants. South windows are strong—use sheer curtains to diffuse light.</p></article>
-      <article class="guide"><h3>Pot & Soil</h3><p>Use a well-draining mix and a pot with a hole. Repot yearly to refresh nutrients and root space.</p></article>
-      <article class="guide"><h3>Pruning & Maintenance</h3><p>Trim dead leaves and stems regularly to encourage new growth and maintain plant health.</p></article>
-      <article class="guide"><h3>Fertilizing</h3><p>Feed plants with a balanced fertilizer every 2–4 weeks during growing season. Reduce feeding in winter months.</p></article>
-      <article class="guide"><h3>Pest Control</h3><p>Check leaves for pests like aphids or mites. Use neem oil spray or organic insecticides when necessary.</p></article>
-      <article class="guide"><h3>Seasonal Care</h3><p>Adjust watering and light exposure depending on the season. Protect plants indoors during harsh winters.</p></article>
-    </section>
-
-    <!-- PlantFlash -->
-    <section id="plantflash" class="card">
-      <h2>PlantFlash <span aria-hidden="true">⚡</span></h2>
-      <div class="flash" id="flashContainer">
-        <p id="flashText">Tap “Next” to learn a plant fun fact!</p>
-        <div class="row">
-          <button type="button" id="flashPrev" class="ghost">◀ Prev</button>
-          <button type="button" id="flashNext">Next ▶</button>
+        <div class="row" style="margin-top:.6rem">
+          <button type="button" id="getWeatherBtn">Get Weather + Suggest Plants</button>
+          <button type="button" id="gpsBtn" class="ghost">Use My Location</button>
         </div>
+
+        <div class="result" id="weatherBox" aria-live="polite">Weather not loaded.</div>
+        <div class="result" id="resultBox" style="display:none;"></div>
+      </section>
+
+      <!-- AI Engine -->
+      <section id="aiengine" class="card">
+        <div style="text-align:center;margin-bottom:1.5rem">
+          <h1><b>🤖 AI Engine 🤖</b></h1>
+          <p class="lead">Let AI Engine Help You To Detect Disease</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+          <div class="card" style="padding:1rem">
+            <h5><b>Why detect plant disease?</b></h5>
+            <p>Early detection saves plants and reduces waste. Diagnosis helps pick the right treatment quickly.</p>
+          </div>
+
+          <div class="card" style="text-align:center;padding:1rem">
+            <img src="https://cdn-icons-png.freepik.com/512/14130/14130512.png" alt="AI Analysis Icon" style="width:140px;height:140px;margin-bottom:1rem"/>
+            <div class="custom-file-upload" style="width:100%;position:relative">
+              <input type="file" id="plantImageInput" accept="image/*" />
+              <label for="plantImageInput" class="file-upload-label" style="display:inline-block;padding:.9rem 1.2rem;background:var(--ink-2);color:#fff;border-radius:10px;cursor:pointer">
+                Choose File
+              </label>
+
+              <!-- Camera open button next to the choose file -->
+              <button id="openCameraBtn" class="small-btn" type="button" title="Open camera to capture photo" style="margin-left:.5rem">📷 Camera</button>
+
+              <span id="fileChosen" class="file-chosen" style="display:block;margin-top:.6rem;font-style:italic;color:var(--ink)">No file chosen</span>
+            </div>
+
+            <p class="upload-hint" style="color:#666;margin-top:.6rem">Upload your plant leaf image or capture one using your camera, then click Submit.</p>
+
+            <!-- Camera preview area (hidden by default) -->
+            <div id="cameraArea" class="camera-hidden" style="margin-top:.8rem;text-align:center">
+              <video id="cameraVideo" autoplay playsinline class="camera-hidden"></video>
+              <!-- hidden canvas used for capture -->
+              <canvas id="cameraCanvas" class="camera-hidden" style="display:none"></canvas>
+              <div class="camera-actions" style="margin-top:.6rem">
+                <button id="captureBtn" class="small-btn" type="button">Capture</button>
+                <button id="closeCameraBtn" class="small-btn ghost" type="button">Close Camera</button>
+              </div>
+            </div>
+
+            <button id="submitBtn" type="button" style="margin-top:.6rem;width:100%">Submit for Analysis</button>
+          </div>
+
+          <div class="card" style="padding:1rem">
+            <h5><b>Prevent Plant Disease</b></h5>
+            <ol>
+              <li>Good sanitation</li>
+              <li>Appropriate fertilization</li>
+              <li>Water in morning</li>
+              <li>Improve air circulation</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Page -->
+      <section id="results" class="card">
+        <div style="text-align:center;margin-bottom:1rem">
+          <h1 id="resultsTitle"><b>Analysis Results 🍂</b></h1>
+        </div>
+
+        <div id="analyzingState" style="display:none;text-align:center;padding:2rem">
+          <div class="spinner" style="border:4px solid rgba(0,77,64,.1);border-left-color:var(--ink-2);border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;margin:0 auto 1rem"></div>
+          <h3>Analyzing your plant image...</h3>
+        </div>
+
+        <div id="resultsContent" style="display:none">
+          <div style="text-align:center;margin-bottom:1rem">
+            <img id="uploadedImagePreview" class="uploaded-image" src="" alt="Uploaded plant leaf" style="max-width:350px;border-radius:12px;border:3px solid var(--mint)"/>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="card">
+              <h5><b>Brief Description:</b></h5>
+              <p id="descriptionText"></p>
+            </div>
+
+            <div class="card">
+              <h5><b>Prevention Steps:</b></h5>
+              <p id="preventionText"></p>
+            </div>
+          </div>
+
+          <button id="backToUpload" type="button" style="display:block;margin:1.2rem auto" class="ghost">Analyze Another Image</button>
+        </div>
+      </section>
+
+      <!-- Abstract -->
+      <section id="abstract" class="card">
+        <h2>Abstract</h2>
+        <p class="lead">The New-Gen Gardeners Don’t Carry The Old Legacy Of Traditional
+Methords Of Identifying The Disease Their Beloved Plants Are Carrying.</p>
+ <p class="lead">WE NOW HAVE A SOLUTION FOR THAT !</p>
+ <p class="lead">Introducing Zenroot.
+It Is A Project Where We Aim To Provide All The Basic Information You Need
+To Identify What Your Plant Is Going Through And How It Can Be Cured..</p>
+        <p style="margin-top:.6rem;color:var(--ink)">We provide AI Engine Specially Designed To Detect The Disease In The
+Plant With The Help Of A Simple Picture, Features Like API Which Can Help You Understand Which
+Plants Are Suitable For Your Region And A Portable Device Which Is Made For Detection Of Disease</p>
+
+      </section>
+
+<!-- Contact / Profiles -->
+<section id="contact" class="card">
+  <h2>Contact Profiles</h2>
+  <p>Reach out to the team members below — click any email to compose a message or copy it.</p>
+
+  <div class="profiles-grid" role="list">
+    <!-- Profile 1 -->
+    <div class="profile-card" role="listitem">
+      <div class="avatar" aria-hidden="true">JB</div>
+      <div class="profile-name">Jatin Bansal</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;">
+        <a class="profile-email" href="mailto:bjatin2010@gmail.com">bjatin2010@gmail.com</a>
+        <button type="button" class="copy-email-btn small-btn" data-email="bjatin2010@gmail.com">📋 Copy</button>
       </div>
-    </section>
-
-    <!-- History -->
-    <section id="history" class="card">
-      <h2>Plant/Crop History</h2>
-      <div id="historyList" class="history"></div>
-      <button type="button" id="clearHistory" class="danger ghost">Clear History</button>
-    </section>
-  </section>
-</main>
-
-<!-- Reset Password Modal -->
-<dialog id="resetDialog">
-  <form method="dialog" class="card modal" id="resetForm">
-    <h3>Reset Password</h3>
-    <label>Email <input type="email" id="resetEmail" required/></label>
-    <label>New Password <input type="password" id="resetNewPass" minlength="6" required/></label>
-    <div class="row">
-      <button type="button" id="resetConfirm" value="confirm">Update</button>
-      <button type="button" class="ghost" id="resetCancel" value="cancel">Cancel</button>
     </div>
-  </form>
-</dialog>
 
-<script src="zenroot.js" defer></script>
+    <!-- Profile 2 -->
+    <div class="profile-card" role="listitem">
+      <div class="avatar" aria-hidden="true">AG</div>
+      <div class="profile-name">Atharv Gupta</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;">
+        <a class="profile-email" href="mailto:atharvgupta002010@gmail.com">atharvgupta002010@gmail.com</a>
+        <button type="button" class="copy-email-btn small-btn" data-email="atharvgupta002010@gmail.com">📋 Copy</button>
+      </div>
+    </div>
+
+    <!-- Profile 3 -->
+    <div class="profile-card" role="listitem">
+      <div class="avatar" aria-hidden="true">CB</div>
+      <div class="profile-name">Chirag Bhandari</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;">
+        <a class="profile-email" href="mailto:bhandarichirag007@gmail.com">bhandarichirag007@gmail.com</a>
+        <button type="button" class="copy-email-btn small-btn" data-email="bhandarichirag007@gmail.com">📋 Copy</button>
+      </div>
+    </div>
+  </div>  
+    </section>
+ </section>
+  </main>
+  <!-- external JS (keep zenroot.js as before) -->
+ <script src="zenroot.js"></script>
 </body>
 </html>
