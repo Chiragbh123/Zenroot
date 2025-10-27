@@ -1,390 +1,424 @@
-// ===== DOM HOOKS =====
-const $ = (q) => document.querySelector(q);
-const $$ = (q) => Array.from(document.querySelectorAll(q));
+/* zenroot.js - Updated with CNN Backend Integration */
 
-const loginForm = $('#loginForm');
-const signUpForm = $('#signUpForm');
-const plantForm = $('#plantForm');
+(function(){
+  'use strict';
 
-const resultBox = $('#resultBox');
-const weatherBox = $('#weatherBox');
+  // CNN Backend Configuration
+  const CNN_BACKEND_URL = 'http://localhost:5000';  // Change this to your server URL
 
-const cityInput = $('#cityInput');
-const cityDropdown = $('#cityDropdown');
-const getWeatherBtn = $('#getWeatherBtn');
-const gpsBtn = $('#gpsBtn');
+  /* ==============================
+     🌙 THEME HANDLING
+  ============================== */
+  const THEME_KEY = 'zenroot_theme';
+  const rootEl = document.documentElement;
 
-const resetPasswordBtn = $('#resetPasswordBtn');
-const resetDialog = $('#resetDialog');
-const resetEmail = $('#resetEmail');
-const resetNewPass = $('#resetNewPass');
-const resetConfirmBtn = $('#resetConfirm');
-const resetCancelBtn = $('#resetCancel');
-
-const historyList = $('#historyList');
-const clearHistoryBtn = $('#clearHistory');
-
-const tabs = $$('.tab');
-const logoutTopBtn = $('#logoutTopBtn');
-const loading = $('#loading');
-
-// MSP checker
-const mspSelect = $('#mspSelect');
-const mspShowBtn = $('#mspShowBtn');
-const mspOutput = $('#mspOutput');
-
-// ===== STATE =====
-// Replace with your real WeatherAPI key
-const weatherApiKey = "3e53efbde704401986192444250610";
-let currentCity = localStorage.getItem('lastCity') || "Mumbai";
-
-// Fun facts
-const facts = [
-  "Snake plant converts CO₂ to O₂ even at night.",
-  "Aloe vera stores water in its leaves—great for beginners.",
-  "Peace lily droops when thirsty—an easy watering cue.",
-  "Most houseplants like bright, indirect light, not harsh sun.",
-  "Overwatering causes more plant deaths than underwatering."
-];
-let factIndex = 0;
-
-// Prices (approx)
-const plantPrices = {
-  "Peace Lily": 350, "Boston Fern": 250, "Spider Plant": 200,
-  "English Ivy": 300, "Bamboo Palm": 450, "Areca Palm": 500,
-  "Snake Plant": 400, "Aloe Vera": 150, "Jade Plant": 250,
-  "Rubber Plant": 600, "ZZ Plant": 700
-};
-
-// MSP/FRP placeholders
-const mspCashCrops = {
-  "Cotton (Medium Staple)": 7710,
-  "Cotton (Long Staple)": 8110,
-  "Raw Jute": 5600,
-  "Copra (Milled)": 11582,
-  "Copra (Ball)": 11000,
-  "Sugarcane (FRP)": 340
-};
-
-// ===== UTIL =====
-const hash = async (text) => {
-  const enc = new TextEncoder().encode(text);
-  const buf = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-};
-
-const getUsers = () => JSON.parse(localStorage.getItem("zenUsers") || "{}");
-const setUsers = (obj) => localStorage.setItem("zenUsers", JSON.stringify(obj));
-
-async function saveUserData(email, password) {
-  const users = getUsers();
-  users[email] = await hash(password);
-  setUsers(users);
-}
-function getUser() { return localStorage.getItem('zenrootUser'); }
-function saveUser(email, name=""){
-  localStorage.setItem('zenrootUser', email);
-  if(name) localStorage.setItem('zenrootName', name);
-}
-function removeUser(){
-  localStorage.removeItem('zenrootUser');
-}
-
-async function checkPassword(email, password){
-  const users = getUsers();
-  if(!users[email]) return false;
-  const h = await hash(password);
-  return h === users[email];
-}
-async function updatePassword(email, newPassword){
-  const users = getUsers();
-  if(!users[email]) return false;
-  users[email] = await hash(newPassword);
-  setUsers(users);
-  return true;
-}
-
-function showForm(formToShow){
-  [loginForm, signUpForm, plantForm].forEach(f => f.classList.remove('active'));
-  formToShow.classList.add('active');
-  resultBox.style.display = 'none';
-  activateTab('home'); // keep Home visible
-}
-
-function toast(msg){ alert(msg); }
-
-// ===== WEATHER =====
-async function getWeather(q){
-  weatherBox.textContent = "";
-  loading.style.display = "block";
-
-  try{
-    const r = await fetch(`https://api.weatherapi.com/v1/current.json?key=${weatherApiKey}&q=${encodeURIComponent(q)}`);
-    if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    const data = await r.json();
-    if(!data || !data.current) throw new Error("No data");
-    const w = data.current;
-    weatherBox.innerHTML = `
-      📍 <b>${data.location.name}, ${data.location.region || data.location.country}</b><br/>
-      🌡️ Temp: ${w.temp_c} °C<br/>
-      💧 Humidity: ${w.humidity}%<br/>
-      🌬️ Wind: ${w.wind_kph} kph<br/>
-      🌥️ ${w.condition.text}<br/>
-      <img src="${w.condition.icon}" alt="${w.condition.text} icon"/>
-    `;
-    currentCity = data.location.name;
-    localStorage.setItem("lastCity", currentCity);
-    if(Number.isFinite(w.temp_c) && Number.isFinite(w.humidity)){
-      suggestPlants(w.temp_c, w.humidity);
-    }
-  }catch(e){
-    console.error(e);
-    weatherBox.textContent = "❌ Could not fetch weather data. Check your API key or network.";
-  }finally{
-    loading.style.display = "none";
+  function getStoredTheme(){
+    const stored = localStorage.getItem(THEME_KEY);
+    if(stored === 'dark' || stored === 'light') return stored;
+    if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+    return 'light';
   }
-}
 
-function getWeatherFromInput(){
-  const city = cityInput.value.trim() || cityDropdown.value.trim();
-  if(!city){ toast("Please select or enter a city."); return; }
-  getWeather(city);
-}
+  function applyTheme(theme){
+    const icon = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+    if(theme === 'dark'){
+      rootEl.setAttribute('data-theme','dark');
+      if(icon) icon.textContent = '🌙';
+      if(label) label.textContent = 'Dark';
+    } else {
+      rootEl.removeAttribute('data-theme');
+      if(icon) icon.textContent = '☀️';
+      if(label) label.textContent = 'Light';
+    }
+  }
 
-// Geolocation
-gpsBtn?.addEventListener('click', () => {
-  if(!navigator.geolocation){ toast("Geolocation unavailable on this device."); return; }
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    const {latitude:lat, longitude:lon} = pos.coords;
+  function toggleTheme(){
+    const next = (localStorage.getItem(THEME_KEY) === 'dark') ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+    const btn = document.getElementById('themeToggle');
+    if(btn) btn.setAttribute('aria-pressed', next === 'dark' ? 'true' : 'false');
+  }
+
+  /* ==============================
+     🧩 UTILITIES
+  ============================== */
+  const $ = (s)=>document.querySelector(s);
+  const $$ = (s)=>Array.from(document.querySelectorAll(s));
+  
+  function toast(msg, type='success'){
+    const t=document.createElement('div');
+    t.textContent=msg;
+    t.style.position='fixed';
+    t.style.bottom='20px';
+    t.style.left='50%';
+    t.style.transform='translateX(-50%)';
+    t.style.background= type === 'error' ? '#dc2626' : '#0ea37a';
+    t.style.color='white';
+    t.style.padding='10px 14px';
+    t.style.borderRadius='10px';
+    t.style.fontWeight='600';
+    t.style.boxShadow='0 8px 25px rgba(0,0,0,0.2)';
+    t.style.zIndex='10000';
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), type === 'error' ? 3000 : 2000);
+  }
+
+  /* ==============================
+     🌦️ WEATHER
+  ============================== */
+  const weatherApiKey = "b48469ccc0f440e69c590213251710";
+  const weatherBox = $('#weatherBox');
+  const resultBox = $('#resultBox');
+  const cityInput = $('#cityInput');
+  const cityDropdown = $('#cityDropdown');
+
+  async function getWeather(city){
+    if(!city){ toast("Enter a city first.", 'error'); return; }
+    weatherBox.textContent="⏳ Loading weather...";
     try{
-      const r = await fetch(`https://api.weatherapi.com/v1/current.json?key=${weatherApiKey}&q=${lat},${lon}`);
+      const r = await fetch(`https://api.weatherapi.com/v1/current.json?key=${weatherApiKey}&q=${encodeURIComponent(city)}`);
       const data = await r.json();
-      await getWeather(data.location.name);
-    }catch{
-      getWeather("Mumbai");
+      const w = data.current;
+      weatherBox.innerHTML = `
+        📍 <b>${data.location.name}</b><br>
+        🌡️ ${w.temp_c}°C | 💧${w.humidity}% | 🌬️${w.wind_kph}kph<br>
+        ${w.condition.text}
+      `;
+      suggestPlants(w.temp_c, w.humidity);
+    }catch(e){ 
+      weatherBox.textContent="❌ Unable to fetch weather.";
+      toast("Failed to fetch weather data", 'error');
     }
-  }, ()=> getWeather("Mumbai"), {enableHighAccuracy:false, timeout:8000});
-});
-
-// ===== MSP helpers =====
-function formatMSP(name){
-  if(name in mspCashCrops){
-    const v = mspCashCrops[name];
-    if (name.includes("Sugarcane")) return ` — FRP ₹${v}/quintal`;
-    return ` — MSP ₹${v}/quintal`;
-  }
-  return "";
-}
-
-// ===== SUGGESTIONS =====
-function suggestPlants(temp, humidity){
-  let suggestions = [];
-  if (temp >= 30 && humidity >= 60) {
-    suggestions = ["Peace Lily", "Boston Fern", "Spider Plant"];
-  } else if (temp <= 20 && humidity >= 60) {
-    suggestions = ["English Ivy", "Bamboo Palm", "Areca Palm"];
-  } else if (humidity < 40) {
-    suggestions = ["Snake Plant", "Aloe Vera", "Jade Plant"];
-  } else {
-    suggestions = ["Rubber Plant", "ZZ Plant"];
   }
 
-  resultBox.innerHTML = `
-    <h3>🌱 Suggested Plants / Crops</h3>
-    <ul>
-      ${suggestions.map(p=>{
-        const price = plantPrices[p] ? ` (avg ₹${plantPrices[p]})` : "";
-        const msp = formatMSP(p);
-        return `<li class="plant-item">🌿 ${p}${price}${msp}</li>`;
-      }).join('')}
-    </ul>
-  `;
-  resultBox.style.display = "block";
-
-  const history = JSON.parse(localStorage.getItem("plantHistory") || "[]");
-  history.push({ city: currentCity, date: new Date().toLocaleString(), temp, humidity, plants: suggestions });
-  localStorage.setItem("plantHistory", JSON.stringify(history));
-  renderHistory();
-}
-
-// ===== AUTH =====
-loginForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const email = $('#loginEmail').value.trim();
-  const password = $('#loginPassword').value;
-  const ok = await checkPassword(email, password);
-  if(ok){
-    saveUser(email);
-    toast(`✅ Logged in as ${email}`);
-    loginForm.reset();
-    showForm(plantForm);
-    getWeather(currentCity);
-    updateLogoutVisibility();
-  }else{
-    toast('❌ Invalid email or password.');
+  function suggestPlants(temp,hum){
+    const res = $('#resultBox');
+    let plants=[];
+    if(temp>30 && hum>60) plants=["🌿 Peace Lily","🌿 Spider Plant"];
+    else if(temp<20 && hum>60) plants=["🌿 English Ivy","🌿 Bamboo Palm"];
+    else if(hum<40) plants=["🌿 Snake Plant","🌿 Aloe Vera"];
+    else plants=["🌿 ZZ Plant","🌿 Rubber Plant"];
+    res.innerHTML=`<h3>🌱 Suggested Plants</h3><ul>${plants.map(p=>`<li>${p}</li>`).join('')}</ul>`;
+    res.style.display="block";
   }
-});
 
-signUpForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const name = $('#signUpName').value.trim();
-  const email = $('#signUpEmail').value.trim();
-  const password = $('#signUpPassword').value;
-  if(!name || !email || !password){ toast("Please fill all fields."); return; }
-  if(password.length < 6){ toast("Password must be at least 6 characters."); return; }
-  await saveUserData(email, password);
-  saveUser(email, name);
-  toast(`✅ Account created for ${name}`);
-  signUpForm.reset();
-  showForm(loginForm);
-  updateLogoutVisibility();
-});
+  /* ==============================
+     📸 CAMERA
+  ============================== */
+  const openCameraBtn=$('#openCameraBtn');
+  const captureBtn=$('#captureBtn');
+  const closeCameraBtn=$('#closeCameraBtn');
+  const cameraArea=$('#cameraArea');
+  const cameraVideo=$('#cameraVideo');
+  const cameraCanvas=$('#cameraCanvas');
+  let cameraStream=null;
 
-// Reset password dialog
-resetPasswordBtn?.addEventListener('click', ()=>{
-  resetEmail.value = "";
-  resetNewPass.value = "";
-  resetDialog.showModal();
-});
-resetConfirmBtn?.addEventListener('click', async ()=>{
-  const email = resetEmail.value.trim();
-  const newPass = resetNewPass.value;
-  if(!email){ toast("Enter email."); return; }
-  if(!newPass || newPass.length < 6){ toast("Password must be at least 6 characters."); return; }
-  const ok = await updatePassword(email, newPass);
-  if(!ok){ toast("Email not found."); return; }
-  toast("✅ Password updated!");
-  resetDialog.close();
-});
-resetCancelBtn?.addEventListener('click', ()=> resetDialog.close());
-
-// Logout
-logoutTopBtn?.addEventListener('click', ()=>{
-  removeUser();
-  toast('Logged out.');
-  showForm(loginForm);
-  updateLogoutVisibility();
-});
-
-// Switch forms
-$('#toSignUp')?.addEventListener('click', ()=> showForm(signUpForm));
-$('#toLogin')?.addEventListener('click', ()=> showForm(loginForm));
-
-// ===== TABS =====
-function activateTab(id){
-  tabs.forEach(t=>{
-    const isActive = t.dataset.tab === id;
-    t.classList.toggle('active', isActive);
-    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
-  });
-  ['plantForm','abstract','gardenguide','plantflash','history']
-    .forEach(sec => $('#'+sec).classList.remove('active'));
-  if(id === 'home'){ $('#plantForm').classList.add('active'); }
-  else { $('#'+id).classList.add('active'); }
-}
-tabs.forEach(btn=> btn.addEventListener('click', ()=> activateTab(btn.dataset.tab)));
-
-// ===== HISTORY =====
-function renderHistory(){
-  const history = JSON.parse(localStorage.getItem("plantHistory") || "[]").slice().reverse();
-  if(history.length === 0){ historyList.innerHTML = "<p>No history yet.</p>"; return; }
-  historyList.innerHTML = history.map(h=>{
-    const plantsWithInfo = h.plants.map(p=>{
-      const price = plantPrices[p] ? ` (₹${plantPrices[p]})` : "";
-      const msp = formatMSP(p);
-      return `${p}${price}${msp ? ` — ${msp.replace(' — ','')}` : ""}`;
-    }).join(", ");
-    return `
-      <div class="history-item">
-        <b>${h.city}</b> — ${h.date}<br/>
-        Temp: ${h.temp} °C, Humidity: ${h.humidity}%<br/>
-        ${plantsWithInfo}
-      </div>
-    `;
-  }).join('');
-}
-clearHistoryBtn?.addEventListener('click', ()=>{
-  if(confirm("Clear all history?")){
-    localStorage.removeItem("plantHistory");
-    renderHistory();
+  async function startCamera(){
+    try{
+      cameraStream = await navigator.mediaDevices.getUserMedia({video:true});
+      cameraVideo.srcObject = cameraStream;
+      cameraArea.classList.remove('camera-hidden');
+      cameraVideo.classList.remove('camera-hidden');
+      await cameraVideo.play();
+      toast("Camera started");
+    }catch(err){ 
+      toast('Camera access denied.', 'error');
+      console.error('Camera error:', err);
+    }
   }
-});
 
-// ===== PlantFlash (animated) =====
-function swapFactAnimated(nextText, direction = 'right'){
-  const container = $('#flashContainer');
-  const textEl = $('#flashText');
-  if(!container || !textEl) return;
+  function stopCamera(){
+    if(cameraStream){ 
+      cameraStream.getTracks().forEach(t=>t.stop()); 
+      cameraStream=null; 
+    }
+    cameraVideo.pause();
+    cameraArea.classList.add('camera-hidden');
+    cameraVideo.classList.add('camera-hidden');
+  }
 
-  textEl.classList.remove('flash-enter-right','flash-enter-left','flash-leave-left','flash-leave-right');
+  function captureFromCamera(){
+    if(!cameraVideo || !cameraVideo.videoWidth){ 
+      toast("Camera not ready.", 'error'); 
+      return; 
+    }
+    const ctx=cameraCanvas.getContext('2d');
+    cameraCanvas.width=cameraVideo.videoWidth;
+    cameraCanvas.height=cameraVideo.videoHeight;
+    ctx.drawImage(cameraVideo,0,0);
+    cameraCanvas.toBlob(blob=>{
+      const f=new File([blob],"camera_photo.jpg",{type:"image/jpeg"});
+      const dt=new DataTransfer();
+      dt.items.add(f);
+      const plantImageInput = $('#plantImageInput');
+      const fileChosen = $('#fileChosen');
+      plantImageInput.files = dt.files;
+      if(fileChosen) fileChosen.textContent="camera_photo.jpg";
+      stopCamera();
+      toast("Photo captured!");
+    });
+  }
 
-  const leaveClass = (direction === 'right') ? 'flash-leave-left' : 'flash-leave-right';
-  textEl.classList.add(leaveClass);
+  /* ==============================
+     🌿 CNN INTEGRATION
+  ============================== */
+  const plantImageInput=$('#plantImageInput');
+  const fileChosen=$('#fileChosen');
+  const submitBtn=$('#submitBtn');
 
-  const onLeaveEnd = () => {
-    textEl.removeEventListener('animationend', onLeaveEnd);
-    textEl.textContent = nextText;
-    textEl.classList.remove(leaveClass);
+  // Check backend health
+  async function checkBackendHealth(){
+    try{
+      const response = await fetch(`${CNN_BACKEND_URL}/health`);
+      const data = await response.json();
+      console.log('Backend health:', data);
+      return data.model_loaded;
+    }catch(err){
+      console.error('Backend not reachable:', err);
+      return false;
+    }
+  }
 
-    const enterClass = (direction === 'right') ? 'flash-enter-right' : 'flash-enter-left';
-    textEl.classList.add(enterClass);
+  // Basic image validation
+  async function analyzeImage(file){
+    return new Promise(resolve=>{
+      const img=new Image();
+      img.src=URL.createObjectURL(file);
+      img.onload=()=>{
+        const size=128, cvs=document.createElement('canvas');
+        cvs.width=size;cvs.height=size;
+        const ctx=cvs.getContext('2d',{willReadFrequently:true});
+        ctx.drawImage(img,0,0,size,size);
+        const d=ctx.getImageData(0,0,size,size).data;
+        let green=0,skin=0,bright=0;
+        for(let i=0;i<d.length;i+=4){
+          const r=d[i],g=d[i+1],b=d[i+2];
+          const br=(r+g+b)/3;
+          if(br>240||br<20) bright++;
+          if(g>r+20&&g>b+20&&g>60) green++;
+          if(r>90&&g>40&&b<110&&r>g&&g>b) skin++;
+        }
+        URL.revokeObjectURL(img.src);
+        resolve({
+          greenRatio:green/(d.length/4),
+          skinRatio:skin/(d.length/4),
+          brightRatio:bright/(d.length/4)
+        });
+      };
+      img.onerror=()=>resolve({greenRatio:0,skinRatio:0,brightRatio:1});
+    });
+  }
 
-    container.classList.remove('flash-pop');
-    container.offsetHeight; // reflow
-    container.classList.add('flash-pop');
+  async function isValidLeaf(file){
+    const {greenRatio,skinRatio,brightRatio}=await analyzeImage(file);
+    if(skinRatio>0.15) return {ok:false,msg:"❌ Human detected. Upload a clear leaf photo."};
+    if(greenRatio<0.08) return {ok:false,msg:"❌ Not enough green detected. Use a leaf close-up."};
+    if(brightRatio>0.45) return {ok:false,msg:"❌ Image too bright or dark. Use better lighting."};
+    return {ok:true};
+  }
 
-    const cleanup = () => {
-      textEl.classList.remove(enterClass);
-      textEl.removeEventListener('animationend', cleanup);
+  function showError(msg){
+    activateTab('results');
+    $('#analyzingState').style.display='none';
+    $('#resultsContent').style.display='none';
+    
+    // Remove any existing error message
+    const existing = document.querySelector('#results .error-message');
+    if(existing) existing.remove();
+    
+    const err=document.createElement('div');
+    err.className='error-message';
+    err.style.background='rgba(227,74,59,0.1)';
+    err.style.color='#b91c1c';
+    err.style.padding='20px';
+    err.style.borderRadius='12px';
+    err.style.fontWeight='700';
+    err.style.margin='20px';
+    err.style.textAlign='center';
+    err.innerHTML=`<h3>${msg}</h3><button onclick="window.location.reload()" style="margin-top:10px;padding:10px 20px;background:#b91c1c;color:white;border:none;border-radius:8px;cursor:pointer;">Try Again</button>`;
+    $('#results').appendChild(err);
+  }
+
+  // Main CNN prediction function
+  async function predictWithCNN(file){
+    try{
+      // Create FormData to send image
+      const formData = new FormData();
+      formData.append('image', file);
+
+      // Send to backend
+      const response = await fetch(`${CNN_BACKEND_URL}/predict`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if(!response.ok){
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Prediction failed');
+      }
+
+      const data = await response.json();
+      return data;
+
+    }catch(err){
+      console.error('CNN prediction error:', err);
+      throw err;
+    }
+  }
+
+  async function handleSubmit(){
+    const file=plantImageInput.files[0];
+    if(!file){ 
+      toast("Select an image first.", 'error'); 
+      return; 
+    }
+
+    // Validate image
+    const valid=await isValidLeaf(file);
+    if(!valid.ok){ 
+      showError(valid.msg); 
+      return; 
+    }
+
+    // Check backend availability
+    const backendAvailable = await checkBackendHealth();
+    if(!backendAvailable){
+      showError('⚠️ CNN Backend is not available. Please ensure the Flask server is running at ' + CNN_BACKEND_URL);
+      return;
+    }
+
+    // Show analyzing state
+    activateTab('results');
+    $('#analyzingState').style.display='block';
+    $('#resultsContent').style.display='none';
+
+    // Read image for preview
+    const reader=new FileReader();
+    reader.onload=async ()=>{
+      try{
+        // Call CNN backend
+        const prediction = await predictWithCNN(file);
+
+        if(prediction.success){
+          // Display results
+          $('#resultsTitle').innerHTML=`<b>${prediction.disease_info.title} 🍃</b>`;
+          $('#uploadedImagePreview').src=reader.result;
+          $('#descriptionText').innerHTML = `
+            <strong>Confidence:</strong> ${prediction.prediction.confidence_percent}<br><br>
+            ${prediction.disease_info.description}
+          `;
+          $('#preventionText').textContent=prediction.disease_info.prevention;
+          
+          $('#analyzingState').style.display='none';
+          $('#resultsContent').style.display='block';
+          
+          toast(`Detected: ${prediction.prediction.display_name}`);
+        }else{
+          throw new Error('Prediction unsuccessful');
+        }
+
+      }catch(err){
+        console.error('Error:', err);
+        showError(`❌ Analysis failed: ${err.message}. Please try again or check your backend server.`);
+      }
     };
-    textEl.addEventListener('animationend', cleanup, {once:true});
-  };
-
-  textEl.addEventListener('animationend', onLeaveEnd, {once:true});
-}
-function renderFact(){ const el = $('#flashText'); if(el) el.textContent = facts[factIndex]; }
-$('#flashNext')?.addEventListener('click', ()=>{
-  const nextIdx = (factIndex + 1) % facts.length;
-  swapFactAnimated(facts[nextIdx], 'right');
-  factIndex = nextIdx;
-});
-$('#flashPrev')?.addEventListener('click', ()=>{
-  const prevIdx = (factIndex - 1 + facts.length) % facts.length;
-  swapFactAnimated(facts[prevIdx], 'left');
-  factIndex = prevIdx;
-});
-
-// MSP checker
-mspShowBtn?.addEventListener('click', ()=>{
-  const key = mspSelect?.value || "";
-  if(!key){ mspOutput.textContent = "Please select a crop."; return; }
-  const value = mspCashCrops[key];
-  if(value == null){
-    mspOutput.textContent = `${key}: Not available.`;
-  }else{
-    const tag = key.includes("Sugarcane") ? "FRP" : "MSP";
-    mspOutput.textContent = `${key}: ${tag} ₹${value}/quintal`;
+    reader.readAsDataURL(file);
   }
-});
 
-// UI
-function updateLogoutVisibility(){
-  const loggedIn = Boolean(getUser());
-  if (logoutTopBtn) logoutTopBtn.hidden = !loggedIn;
-}
-
-// INIT
-window.addEventListener('load', ()=>{
-  const user = getUser();
-  if (user) {
-    showForm(plantForm);
-    getWeather(currentCity);
-  } else {
-    showForm(loginForm);
+  /* ==============================
+     📋 COPY EMAIL BUTTONS
+  ============================== */
+  function wireCopyButtons(){
+    $$('.copy-email-btn').forEach(btn=>{
+      btn.addEventListener('click',async()=>{
+        const email=btn.dataset.email;
+        try{
+          await navigator.clipboard.writeText(email);
+          toast("📋 Email copied!");
+        }catch{
+          toast("Copy failed.", 'error');
+        }
+      });
+    });
   }
-  activateTab('home');
-  renderFact();
-  renderHistory();
-  updateLogoutVisibility();
-  getWeatherBtn?.addEventListener('click', getWeatherFromInput);
-});
+
+  /* ==============================
+     🪄 TAB SWITCHING
+  ============================== */
+  function activateTab(id){
+    $$('.tab').forEach(t=>{
+      const match = t.dataset.tab === id;
+      t.setAttribute('aria-selected', match ? 'true' : 'false');
+      t.classList.toggle('active', match);
+    });
+    ['home','aiengine','results','abstract','contact'].forEach(sec=>{
+      const el=$(`#${sec}`);
+      if(el){
+        const visible = sec === id;
+        el.classList.toggle('active', visible);
+        el.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      }
+    });
+  }
+
+  /* ==============================
+     ⚙️ INIT
+  ============================== */
+  document.addEventListener('DOMContentLoaded',async ()=>{
+    applyTheme(getStoredTheme());
+    const themeToggleButton = $('#themeToggle');
+    if(themeToggleButton) {
+      themeToggleButton.onclick = toggleTheme;
+      themeToggleButton.setAttribute('aria-pressed', localStorage.getItem(THEME_KEY) === 'dark' ? 'true' : 'false');
+    }
+
+    $('#getWeatherBtn').onclick=()=>getWeather(cityInput.value||cityDropdown.value);
+    $('#gpsBtn').onclick=()=>{ 
+      navigator.geolocation.getCurrentPosition(
+        pos=>{ getWeather(`${pos.coords.latitude},${pos.coords.longitude}`); },
+        ()=>toast("Location unavailable.", 'error')
+      ); 
+    };
+
+    if(openCameraBtn) openCameraBtn.onclick=startCamera;
+    if(captureBtn) captureBtn.onclick=captureFromCamera;
+    if(closeCameraBtn) closeCameraBtn.onclick=stopCamera;
+    if(submitBtn) submitBtn.onclick=handleSubmit;
+
+    if(plantImageInput){
+      plantImageInput.addEventListener('change', ()=>{
+        const f = plantImageInput.files[0];
+        if(f && fileChosen) fileChosen.textContent = f.name;
+      });
+    }
+
+    // Add back to upload button handler
+    const backBtn = $('#backToUpload');
+    if(backBtn){
+      backBtn.onclick = ()=>{
+        activateTab('aiengine');
+        // Reset file input
+        if(plantImageInput) plantImageInput.value = '';
+        if(fileChosen) fileChosen.textContent = 'No file chosen';
+      };
+    }
+
+    wireCopyButtons();
+    
+    $$('.tab').forEach(t=>{
+      t.addEventListener('click', ()=> activateTab(t.dataset.tab));
+    });
+
+    activateTab('home');
+
+    // Check backend on load
+    const isHealthy = await checkBackendHealth();
+    if(!isHealthy){
+      console.warn('⚠️ CNN Backend not available. Disease detection will not work.');
+    }else{
+      console.log('✓ CNN Backend connected successfully');
+    }
+  });
+})();
